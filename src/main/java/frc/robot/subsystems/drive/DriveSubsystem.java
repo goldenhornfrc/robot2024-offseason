@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
+import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
 
 public class DriveSubsystem extends SubsystemBase {
     DriveIO io;
@@ -61,10 +62,10 @@ public class DriveSubsystem extends SubsystemBase {
                 // this::seedFieldRelative,
                 () -> robotState.getLatestRobotRelativeChassisSpeed(),
                 (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
-                new AdvancedHolonomicPathFollowerConfig(new PIDConstants(Constants.AutoConstants.kPXController, 0, 0),
-                        new PIDConstants(Constants.AutoConstants.kPThetaController, 0, 0),
-                        Constants.AutoConstants.kTranslationKa,
-                        CompTunerConstants.kSpeedAt12VoltsMps,
+                new AdvancedHolonomicPathFollowerConfig(new PIDConstants(0, 0, 0),
+                        new PIDConstants(0, 0, 0),
+                        0,
+                        0,
                         driveBaseRadius,
                         new ReplanningConfig()),
                 () -> DriverStation.getAlliance().isPresent()
@@ -78,10 +79,6 @@ public class DriveSubsystem extends SubsystemBase {
         PathPlannerLogging.setLogCurrentPoseCallback((pose) -> {
             Logger.recordOutput("PathPlanner/currentPose", pose);
         });
-    }
-
-    public Pose2d getEstimatedPosition() {
-        return io.getEstimatedPosition();
     }
 
     public Translation2d[] getModuleLocations() {

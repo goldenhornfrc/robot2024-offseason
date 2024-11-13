@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -7,23 +8,27 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveDrivetrain;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveModuleConstants;
-import com.ctre.phoenix6.mechanisms.swerve.SwerveRequest;
+import com.ctre.phoenix6.mechanisms.swerve.*;
+
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
+import frc.robot.util.RobotTime;
 
 /**
  * DriveIOHardware offers a CTRE SwerveDrivetrain in the interface shape of a
  * DriveIO
  */
 public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
+
+        AtomicReference<SwerveDriveState> telemetryCache_ = new AtomicReference<>();
 
 
     private StatusSignal<Double> angularPitchVelocity;
@@ -34,9 +39,15 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     private StatusSignal<Double> accelerationX;
     private StatusSignal<Double> accelerationY;
 
+    public RobotState robotState;
 
-    public DriveIOFalcon(SwerveModuleConstants... modules) {
+
+  public DriveIOFalcon(RobotState robotState, SwerveDrivetrainConstants driveTrainConstants,
+            SwerveModuleConstants... modules) {
         super(driveTrainConstants, modules);
+        this.robotState = robotState;
+        SwerveDriveState state = this.getState();
+
 
         angularPitchVelocity = m_pigeon2.getAngularVelocityYDevice();
         angularRollVelocity = m_pigeon2.getAngularVelocityXDevice();
@@ -50,6 +61,8 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
                 angularPitchVelocity, angularRollVelocity, angularYawVelocity, roll, pitch, accelerationX,
                 accelerationY);
 
+            
+
         registerTelemetry(telemetryConsumer_);
     }
 
@@ -57,9 +70,7 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
         super.seedFieldRelative(pose);
     }
 
-    public Pose2d getEstimatedPosition() {
-        return robotState_.getLatestFieldToRobot().getValue();
-    }
+
 
     public Translation2d[] getModuleLocations() {
         return m_moduleLocations;
@@ -87,11 +98,12 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     Consumer<SwerveDriveState> telemetryConsumer_ = swerveDriveState -> {
         double timestamp = RobotTime.getTimestampSeconds();
         telemetryCache_.set(swerveDriveState.clone());
-        robotState_.addOdometryMeasurement(timestamp, swerveDriveState.Pose);
+       // robotState_.addOdometryMeasurement(timestamp, swerveDriveState.Pose);
     };
 
     @Override
     public void readInputs(DriveIOInputs inputs) {
+
         inputs.fromSwerveDriveState(telemetryCache_.get());
         var gyroRotation = inputs.Pose.getRotation();
         inputs.gyroAngle = gyroRotation.getDegrees();
@@ -117,10 +129,11 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
         double rollRads = Units.degreesToRadians(roll.getValueAsDouble());
         double accelX = accelerationX.getValueAsDouble();
         double accelY = accelerationY.getValueAsDouble();
-        robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
+      /*   robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
                 pitchRads, rollRads, accelX, accelY, desiredFieldRelativeChassisSpeeds,
                 measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
                 fusedFieldRelativeChassisSpeeds);
+                */
     }
 
     @Override
@@ -136,4 +149,6 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
                     driveState.ModuleTargets[i].speedMetersPerSecond);
         }
     }
+
+   
 }

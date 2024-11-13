@@ -8,11 +8,11 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.subsystems.shooter.ShooterIO.ShooterIOInputs;
+
 
 public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIO io;
-  private final ShooterIOInputs inputs = new ShooterIOInputs();
+  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
   public ShooterSubsystem(ShooterIO io) {
     this.io = io;
