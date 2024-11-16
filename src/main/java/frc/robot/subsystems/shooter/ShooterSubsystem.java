@@ -9,7 +9,6 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-
 public class ShooterSubsystem extends SubsystemBase {
   private final ShooterIO io;
   private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
@@ -18,10 +17,29 @@ public class ShooterSubsystem extends SubsystemBase {
     this.io = io;
   }
 
-  public void setVoltage(double leftVoltage,double rightVoltage){
+  public void setVoltage(double leftVoltage, double rightVoltage) {
     io.setVoltage(leftVoltage, rightVoltage);
   }
 
+  public void setTargetRPM(double leftRPM,double rightRPM){
+    io.setTargetRPM(leftRPM, rightRPM);
+  }
+
+  public double getLeftMotorRPM(){
+    io.getRightMotorRPM();
+  }
+
+  public double getRightMotorRPM(){
+    io.getRightMotorRPM();
+  }
+
+  public double getLeftTargetRPM(){
+    io.getLeftTargetRPM();
+  }
+
+  public double getRightTargetRPM(){
+    io.getRightTargetRPM();
+  }
 
   @Override
   public void periodic() {
