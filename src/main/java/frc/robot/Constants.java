@@ -26,6 +26,8 @@ import edu.wpi.first.math.geometry.Translation2d;
  */
 public final class Constants {
 
+  public static boolean kIsReplay = false;
+
   public static class AutoConstants {
     public static final double kPThetaController = 0;
     public static final double kPXController = 0;
@@ -46,6 +48,7 @@ public final class Constants {
     public static final Translation2d BlueSpeaker = new Translation2d(0.0, 5.55);
     public static final Translation2d RedSpeaker = new Translation2d(16.54, 5.55);
   }
+
   public static class ShooterConstants {
     public static final int leftMotorID = 11;
     public static final int rightMotorID = 12;

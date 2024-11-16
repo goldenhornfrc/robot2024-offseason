@@ -1,16 +1,7 @@
 package frc.robot.subsystems.drive;
 
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.littletonrobotics.junction.Logger;
-
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.mechanisms.swerve.*;
-
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -21,134 +12,151 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
 import frc.robot.util.RobotTime;
+import frc.robot.util.swerve.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.littletonrobotics.junction.Logger;
 
-/**
- * DriveIOHardware offers a CTRE SwerveDrivetrain in the interface shape of a
- * DriveIO
- */
+/** DriveIOHardware offers a CTRE SwerveDrivetrain in the interface shape of a DriveIO */
 public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
 
-        AtomicReference<SwerveDriveState> telemetryCache_ = new AtomicReference<>();
+  AtomicReference<SwerveDriveState> telemetryCache_ = new AtomicReference<>();
 
+  private StatusSignal<Double> angularPitchVelocity;
+  private StatusSignal<Double> angularRollVelocity;
+  private StatusSignal<Double> angularYawVelocity;
+  private StatusSignal<Double> roll;
+  private StatusSignal<Double> pitch;
+  private StatusSignal<Double> accelerationX;
+  private StatusSignal<Double> accelerationY;
 
-    private StatusSignal<Double> angularPitchVelocity;
-    private StatusSignal<Double> angularRollVelocity;
-    private StatusSignal<Double> angularYawVelocity;
-    private StatusSignal<Double> roll;
-    private StatusSignal<Double> pitch;
-    private StatusSignal<Double> accelerationX;
-    private StatusSignal<Double> accelerationY;
+  public RobotState robotState;
 
-    public RobotState robotState;
+  public DriveIOFalcon(
+      RobotState robotState,
+      SwerveDrivetrainConstants driveTrainConstants,
+      SwerveModuleConstants... modules) {
+    super(driveTrainConstants, modules);
+    this.robotState = robotState;
 
+    angularPitchVelocity = m_pigeon2.getAngularVelocityYDevice();
+    angularRollVelocity = m_pigeon2.getAngularVelocityXDevice();
+    angularYawVelocity = m_pigeon2.getAngularVelocityZDevice();
+    roll = m_pigeon2.getRoll();
+    pitch = m_pigeon2.getPitch();
+    accelerationX = m_pigeon2.getAccelerationX();
+    accelerationY = m_pigeon2.getAccelerationY();
 
-  public DriveIOFalcon(RobotState robotState, SwerveDrivetrainConstants driveTrainConstants,
-            SwerveModuleConstants... modules) {
-        super(driveTrainConstants, modules);
-        this.robotState = robotState;
-        SwerveDriveState state = this.getState();
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        250,
+        angularPitchVelocity,
+        angularRollVelocity,
+        angularYawVelocity,
+        roll,
+        pitch,
+        accelerationX,
+        accelerationY);
 
+    registerTelemetry(telemetryConsumer_);
+  }
 
-        angularPitchVelocity = m_pigeon2.getAngularVelocityYDevice();
-        angularRollVelocity = m_pigeon2.getAngularVelocityXDevice();
-        angularYawVelocity = m_pigeon2.getAngularVelocityZDevice();
-        roll = m_pigeon2.getRoll();
-        pitch = m_pigeon2.getPitch();
-        accelerationX = m_pigeon2.getAccelerationX();
-        accelerationY = m_pigeon2.getAccelerationY();
+  public void resetOdometry(Pose2d pose) {
+    super.seedFieldRelative(pose);
+  }
 
-        BaseStatusSignal.setUpdateFrequencyForAll(250,
-                angularPitchVelocity, angularRollVelocity, angularYawVelocity, roll, pitch, accelerationX,
-                accelerationY);
+  public Translation2d[] getModuleLocations() {
+    return m_moduleLocations;
+  }
 
-            
+  public void setControl(SwerveRequest request) {
+    super.setControl(request);
+  }
 
-        registerTelemetry(telemetryConsumer_);
+  public Command applyRequest(
+      Supplier<SwerveRequest> requestSupplier, Subsystem subsystemRequired) {
+    return Commands.run(() -> this.setControl(requestSupplier.get()), subsystemRequired);
+  }
+
+  public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {
+    if (visionFieldPoseEstimate.getVisionMeasurementStdDevs() == null) {
+      this.addVisionMeasurement(
+          visionFieldPoseEstimate.getVisionRobotPoseMeters(),
+          visionFieldPoseEstimate.getTimestampSeconds());
+    } else {
+      this.addVisionMeasurement(
+          visionFieldPoseEstimate.getVisionRobotPoseMeters(),
+          visionFieldPoseEstimate.getTimestampSeconds(),
+          visionFieldPoseEstimate.getVisionMeasurementStdDevs());
     }
+  }
 
-    public void resetOdometry(Pose2d pose) {
-        super.seedFieldRelative(pose);
-    }
-
-
-
-    public Translation2d[] getModuleLocations() {
-        return m_moduleLocations;
-    }
-
-    public void setControl(SwerveRequest request) {
-        super.setControl(request);
-    }
-
-    public Command applyRequest(Supplier<SwerveRequest> requestSupplier, Subsystem subsystemRequired) {
-        return Commands.run(() -> this.setControl(requestSupplier.get()), subsystemRequired);
-    }
-
-    public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {
-        if (visionFieldPoseEstimate.getVisionMeasurementStdDevs() == null) {
-            this.addVisionMeasurement(
-                    visionFieldPoseEstimate.getVisionRobotPoseMeters(), visionFieldPoseEstimate.getTimestampSeconds());
-        } else {
-            this.addVisionMeasurement(visionFieldPoseEstimate.getVisionRobotPoseMeters(),
-                    visionFieldPoseEstimate.getTimestampSeconds(),
-                    visionFieldPoseEstimate.getVisionMeasurementStdDevs());
-        }
-    }
-
-    Consumer<SwerveDriveState> telemetryConsumer_ = swerveDriveState -> {
+  Consumer<SwerveDriveState> telemetryConsumer_ =
+      swerveDriveState -> {
         double timestamp = RobotTime.getTimestampSeconds();
         telemetryCache_.set(swerveDriveState.clone());
-       // robotState_.addOdometryMeasurement(timestamp, swerveDriveState.Pose);
-    };
+        // robotState_.addOdometryMeasurement(timestamp, swerveDriveState.Pose);
+      };
 
-    @Override
-    public void readInputs(DriveIOInputs inputs) {
+  @Override
+  public void readInputs(DriveIOInputs inputs) {
 
-        inputs.fromSwerveDriveState(telemetryCache_.get());
-        var gyroRotation = inputs.Pose.getRotation();
-        inputs.gyroAngle = gyroRotation.getDegrees();
-        var measuredRobotRelativeChassisSpeeds = m_kinematics.toChassisSpeeds(inputs.ModuleStates);
-        var measuredFieldRelativeChassisSpeeds = ChassisSpeeds
-                .fromRobotRelativeSpeeds(measuredRobotRelativeChassisSpeeds, gyroRotation);
-        var desiredFieldRelativeChassisSpeeds = ChassisSpeeds
-                .fromRobotRelativeSpeeds(m_kinematics.toChassisSpeeds(inputs.ModuleTargets), gyroRotation);
+    inputs.fromSwerveDriveState(telemetryCache_.get());
+    var gyroRotation = inputs.Pose.getRotation();
+    inputs.gyroAngle = gyroRotation.getDegrees();
+    var measuredRobotRelativeChassisSpeeds = m_kinematics.toChassisSpeeds(inputs.ModuleStates);
+    var measuredFieldRelativeChassisSpeeds =
+        ChassisSpeeds.fromRobotRelativeSpeeds(measuredRobotRelativeChassisSpeeds, gyroRotation);
+    var desiredFieldRelativeChassisSpeeds =
+        ChassisSpeeds.fromRobotRelativeSpeeds(
+            m_kinematics.toChassisSpeeds(inputs.ModuleTargets), gyroRotation);
 
-        BaseStatusSignal.refreshAll(angularRollVelocity, angularPitchVelocity, angularYawVelocity, pitch, roll,
-                accelerationX, accelerationY);
+    BaseStatusSignal.refreshAll(
+        angularRollVelocity,
+        angularPitchVelocity,
+        angularYawVelocity,
+        pitch,
+        roll,
+        accelerationX,
+        accelerationY);
 
-        double timestamp = RobotTime.getTimestampSeconds();
-        double rollRadsPerS = Units.degreesToRadians(angularRollVelocity.getValueAsDouble());
-        double pitchRadsPerS = Units.degreesToRadians(angularPitchVelocity.getValueAsDouble());
-        double yawRadsPerS = Units.degreesToRadians(angularYawVelocity.getValueAsDouble());
-        // Trust gyro rate more than odometry.
-        var fusedFieldRelativeChassisSpeeds = new ChassisSpeeds(measuredFieldRelativeChassisSpeeds.vxMetersPerSecond,
-                measuredFieldRelativeChassisSpeeds.vyMetersPerSecond,
-                yawRadsPerS);
+    double timestamp = RobotTime.getTimestampSeconds();
+    double rollRadsPerS = Units.degreesToRadians(angularRollVelocity.getValueAsDouble());
+    double pitchRadsPerS = Units.degreesToRadians(angularPitchVelocity.getValueAsDouble());
+    double yawRadsPerS = Units.degreesToRadians(angularYawVelocity.getValueAsDouble());
+    // Trust gyro rate more than odometry.
+    var fusedFieldRelativeChassisSpeeds =
+        new ChassisSpeeds(
+            measuredFieldRelativeChassisSpeeds.vxMetersPerSecond,
+            measuredFieldRelativeChassisSpeeds.vyMetersPerSecond,
+            yawRadsPerS);
 
-        double pitchRads = Units.degreesToRadians(pitch.getValueAsDouble());
-        double rollRads = Units.degreesToRadians(roll.getValueAsDouble());
-        double accelX = accelerationX.getValueAsDouble();
-        double accelY = accelerationY.getValueAsDouble();
-      /*   robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
-                pitchRads, rollRads, accelX, accelY, desiredFieldRelativeChassisSpeeds,
-                measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
-                fusedFieldRelativeChassisSpeeds);
-                */
+    double pitchRads = Units.degreesToRadians(pitch.getValueAsDouble());
+    double rollRads = Units.degreesToRadians(roll.getValueAsDouble());
+    double accelX = accelerationX.getValueAsDouble();
+    double accelY = accelerationY.getValueAsDouble();
+    /*   robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
+    pitchRads, rollRads, accelX, accelY, desiredFieldRelativeChassisSpeeds,
+    measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
+    fusedFieldRelativeChassisSpeeds);
+    */
+  }
+
+  @Override
+  public void logModules(SwerveDrivetrain.SwerveDriveState driveState) {
+    final String[] moduleNames = {"Drive/FL", "Drive/FR", "Drive/BL", "Drive/BR"};
+    for (int i = 0; i < ModuleCount; i++) {
+      Logger.recordOutput(
+          moduleNames[i] + " Absolute Encoder Angle",
+          Modules[i].getCANcoder().getAbsolutePosition().getValueAsDouble() * 360);
+      Logger.recordOutput(moduleNames[i] + " Steering Angle", driveState.ModuleStates[i].angle);
+      Logger.recordOutput(
+          moduleNames[i] + " Target Steering Angle", driveState.ModuleTargets[i].angle);
+      Logger.recordOutput(
+          moduleNames[i] + " Drive Velocity", driveState.ModuleStates[i].speedMetersPerSecond);
+      Logger.recordOutput(
+          moduleNames[i] + " Target Drive Velocity",
+          driveState.ModuleTargets[i].speedMetersPerSecond);
     }
-
-    @Override
-    public void logModules(SwerveDrivetrain.SwerveDriveState driveState) {
-        final String[] moduleNames = { "Drive/FL", "Drive/FR", "Drive/BL", "Drive/BR" };
-        for (int i = 0; i < ModuleCount; i++) {
-            Logger.recordOutput(moduleNames[i] + " Absolute Encoder Angle",
-                    Modules[i].getCANcoder().getAbsolutePosition().getValueAsDouble() * 360);
-            Logger.recordOutput(moduleNames[i] + " Steering Angle", driveState.ModuleStates[i].angle);
-            Logger.recordOutput(moduleNames[i] + " Target Steering Angle", driveState.ModuleTargets[i].angle);
-            Logger.recordOutput(moduleNames[i] + " Drive Velocity", driveState.ModuleStates[i].speedMetersPerSecond);
-            Logger.recordOutput(moduleNames[i] + " Target Drive Velocity",
-                    driveState.ModuleTargets[i].speedMetersPerSecond);
-        }
-    }
-
-   
+  }
 }

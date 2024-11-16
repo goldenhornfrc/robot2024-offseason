@@ -4,18 +4,13 @@
 
 package frc.robot.subsystems.shooter;
 
-import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
-
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class ShooterSubsystem extends SubsystemBase {
-  private final ShooterIO io;
-  private final ShooterIOInputsAutoLogged inputs = new ShooterIOInputsAutoLogged();
 
-  public ShooterSubsystem(ShooterIO io) {
-    this.io = io;
-  }
+  private final TalonFX shooterLeft = new TalonFX(45, "Canivore");
+  private final TalonFX shooterRight = new TalonFX(3, "Canivore");
 
   public void setVoltage(double leftVoltage, double rightVoltage) {
     io.setVoltage(leftVoltage, rightVoltage);
@@ -43,8 +38,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Shooter", (LoggableInputs) inputs);
+    // io.updateInputs(inputs);
+    // Logger.processInputs("Shooter", (LoggableInputs) inputs);
     // This method will be called once per scheduler run
   }
 }

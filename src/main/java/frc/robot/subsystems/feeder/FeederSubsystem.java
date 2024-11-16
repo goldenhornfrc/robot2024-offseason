@@ -20,12 +20,11 @@ public class FeederSubsystem extends SubsystemBase {
     SPINNING
   }
 
-  public FeederSubsystem(FeederIO io) {
-    this.io = io;
-  }
+  public FeederSubsystem() {}
 
   public void setVoltage(double voltage) {
-    io.setVoltage(voltage);
+    // io.setVoltage(voltage);
+    feederMotor.setVoltage(voltage);
   }
 
 

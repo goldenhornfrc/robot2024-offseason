@@ -13,6 +13,19 @@
 
 package frc.robot;
 
+import com.choreo.lib.Choreo;
+import com.choreo.lib.ChoreoTrajectory;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import frc.robot.commands.FeederOpenLoop;
+import frc.robot.commands.IntakeOpenLoop;
+import frc.robot.commands.ShooterOpenLoop;
+import frc.robot.subsystems.feeder.FeederSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,21 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
-
-import com.choreo.lib.Choreo;
-import com.choreo.lib.ChoreoTrajectory;
-import com.pathplanner.lib.auto.AutoBuilder;
-
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -44,18 +43,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
-
-  private final Map<String, ChoreoTrajectory> trajMap;
-  // Subsystems
-
   // Controller
   public static final CommandXboxController controller = new CommandXboxController(0);
-  private final LoggedDashboardChooser<Command> autoChooser;
-  private final SendableChooser<Command> autoChoose = new SendableChooser<Command>();
-  private final SendableChooser<Command> auutoChooser;
 
-  private final AutoBuilder autoBuilder = new AutoBuilder();
-
+  private final IntakeSubsystem m_intake = new IntakeSubsystem();
+  private final FeederSubsystem m_feeder = new FeederSubsystem();
+  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
   // Dashboard inputs
   private final LoggedDashboardNumber flywheelSpeedInput =
       new LoggedDashboardNumber("Flywheel Speed", 3000.0);
@@ -79,15 +72,6 @@ public class RobotContainer {
         break;
     }
 
-    trajMap = loadTrajectories();
-
-    // Configure the button bindings
-    auutoChooser = autoBuilder.buildAutoChooser();
-
-    SmartDashboard.putData("OTO SECICI", auutoChooser);
-
-    autoChooser = new LoggedDashboardChooser<Command>("Auto Choices", autoChoose);
-
     configureButtonBindings();
   }
 
@@ -97,7 +81,16 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj.Joystick} or {@link XboxController}), and then passing it to a {@link
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
-  private void configureButtonBindings() {}
+  private void configureButtonBindings() {
+    controller.a().whileTrue(new IntakeOpenLoop(m_intake, 6));
+    controller.y().whileTrue(new IntakeOpenLoop(m_intake, -6));
+
+    controller.b().whileTrue(new FeederOpenLoop(m_feeder, 4));
+    controller.x().whileTrue(new FeederOpenLoop(m_feeder, -4));
+
+    controller.leftBumper().whileTrue(new ShooterOpenLoop(m_shooter, 6));
+    controller.rightBumper().whileTrue(new ShooterOpenLoop(m_shooter, -6));
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -105,7 +98,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return auutoChooser.getSelected();
+    return null;
   }
 
   private Map<String, ChoreoTrajectory> loadTrajectories() {
