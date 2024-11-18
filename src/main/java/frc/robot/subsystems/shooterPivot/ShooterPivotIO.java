@@ -15,7 +15,9 @@ public interface ShooterPivotIO {
 
   public default void setVoltage(double voltage) {}
 
-  public default void setPivotAngle(double targetAngle) {}
+  public default void setMotionMagicAngle(double targetAngle) {}
+
+  public default void setPositionVoltageAngle(double angle) {}
 
   public default double getShooterPivotAngle() {
     return 0;
@@ -24,5 +26,6 @@ public interface ShooterPivotIO {
   public default double getTargetAngle() {
     return 0;
   }
+
   public default void updateInputs(ShooterPivotIOInputs inputs) {}
 }
