@@ -15,17 +15,32 @@ package frc.robot;
 
 import com.choreo.lib.Choreo;
 import com.choreo.lib.ChoreoTrajectory;
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.commands.FeederOpenLoop;
-import frc.robot.commands.IntakeOpenLoop;
-import frc.robot.commands.ShooterOpenLoop;
+import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.CloseLoop.DefaultDriveCommand;
+import frc.robot.commands.CloseLoop.SetPivotAngle;
+import frc.robot.commands.OpenLoop.FeederOpenLoop;
+import frc.robot.commands.OpenLoop.ShooterOpenLoop;
+import frc.robot.subsystems.drive.DriveIO;
+import frc.robot.subsystems.drive.DriveIOFalcon;
+import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.feeder.FeederIO;
+import frc.robot.subsystems.feeder.FeederIOFalcon;
 import frc.robot.subsystems.feeder.FeederSubsystem;
+import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOSpark;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOKraken;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.shooterPivot.ShooterPivotIO;
+import frc.robot.subsystems.shooterPivot.ShooterPivotIOFalcon;
+import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,11 +59,15 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
  */
 public class RobotContainer {
   // Controller
-  public static final CommandXboxController controller = new CommandXboxController(0);
+  public static final CommandPS5Controller controller = new CommandPS5Controller(0);
 
-  private final IntakeSubsystem m_intake = new IntakeSubsystem();
-  private final FeederSubsystem m_feeder = new FeederSubsystem();
-  private final ShooterSubsystem m_shooter = new ShooterSubsystem();
+  // Subsystems
+  // public static DriveSubsystem drive;
+  public static IntakeSubsystem intake;
+  public static ShooterSubsystem shooter;
+  public static ShooterPivotSubsystem pivot;
+  public static FeederSubsystem feeder;
+  public static DriveSubsystem drive;
   // Dashboard inputs
   private final LoggedDashboardNumber flywheelSpeedInput =
       new LoggedDashboardNumber("Flywheel Speed", 3000.0);
@@ -57,16 +76,40 @@ public class RobotContainer {
   public RobotContainer() {
     switch (Constants.currentMode) {
       case REAL:
+        intake = new IntakeSubsystem(new IntakeIOSpark());
+        shooter = new ShooterSubsystem(new ShooterIOKraken());
+        pivot = new ShooterPivotSubsystem(new ShooterPivotIOFalcon());
+        feeder = new FeederSubsystem(new FeederIOFalcon());
+        drive =
+            new DriveSubsystem(
+                new DriveIOFalcon(
+                    DriveConstants.kDriveTrain.getDriveTrainConstants(),
+                    DriveConstants.kDriveTrain.getModuleConstants()));
+
         // Real robot, instantiate hardware IO implementations
 
         break;
 
       case SIM:
+        intake = new IntakeSubsystem(new IntakeIOSpark()); // TODO
+        shooter = new ShooterSubsystem(new ShooterIOKraken()); // TODO
+        pivot = new ShooterPivotSubsystem(new ShooterPivotIOFalcon()); // TODO
+        feeder = new FeederSubsystem(new FeederIOFalcon()); // TODO
+        drive =
+            new DriveSubsystem(
+                new DriveIOFalcon(
+                    DriveConstants.kDriveTrain.getDriveTrainConstants(),
+                    DriveConstants.kDriveTrain.getModuleConstants()));
         // Sim robot, instantiate physics sim IO implementations
 
         break;
 
       default:
+        intake = new IntakeSubsystem(new IntakeIO() {});
+        shooter = new ShooterSubsystem(new ShooterIO() {});
+        pivot = new ShooterPivotSubsystem(new ShooterPivotIO() {});
+        feeder = new FeederSubsystem(new FeederIO() {});
+        drive = new DriveSubsystem(new DriveIO() {});
         // Replayed robot, disable IO implementations
 
         break;
@@ -82,14 +125,51 @@ public class RobotContainer {
    * edu.wpi.first.wpilibj2.command.button.JoystickButton}.
    */
   private void configureButtonBindings() {
-    controller.a().whileTrue(new IntakeOpenLoop(m_intake, 6));
-    controller.y().whileTrue(new IntakeOpenLoop(m_intake, -6));
 
-    controller.b().whileTrue(new FeederOpenLoop(m_feeder, 4));
-    controller.x().whileTrue(new FeederOpenLoop(m_feeder, -4));
+    drive.setDefaultCommand(
+        new DefaultDriveCommand(
+            drive,
+            () -> MathUtil.applyDeadband(controller.getLeftY(), 0.05),
+            () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
+            () -> MathUtil.applyDeadband(controller.getRightX(), 0.05),
+            () -> false));
+    controller.cross().onTrue(new SetPivotAngle(pivot, 60, true));
+    controller.triangle().onTrue(new SetPivotAngle(pivot, 119, true));
+    controller.circle().whileTrue(new ShooterOpenLoop(shooter, 3));
+    controller.square().whileTrue(new FeederOpenLoop(feeder, 6));
 
-    controller.leftBumper().whileTrue(new ShooterOpenLoop(m_shooter, 6));
-    controller.rightBumper().whileTrue(new ShooterOpenLoop(m_shooter, -6));
+    /*  controller
+        .circle()
+        .whileTrue(
+            new BackIntakeOpenLoop(intake, 5)
+                .alongWith(new FeederOpenLoop(feeder, 6))
+                .alongWith(new ShooterOpenLoop(shooter, 4)));
+    // controller.triangle().whileTrue(new FeederOpenLoop(feeder, 10));
+    // controller.square().whileTrue(new ShooterPivotOpenLoop(pivot, -2));
+    controller.square().whileTrue(new SetShooterRPM(shooter, 3000, 3000));
+    /*  controller
+    .triangle()
+    .whileTrue(
+        new FrontIntakeOpenLoop(intake, 5)
+            .alongWith(new ShooterOpenLoop(shooter, -5))
+            .alongWith(new FeederOpenLoop(feeder, -2))); */
+    // controller.y().whileTrue(new ShooterPivotOpenLoop(pivot, 3.5));
+    // controller.x().whileTrue(new SetShooterRPM(shooter, 2000, 2000));
+    // controller.b().whileTrue(new SetPivotAngle(pivot, 15));
+
+    /*controller
+        .button(1) // BACK INTAKE
+        .whileTrue(
+            new BackIntakeOpenLoop(intake, 3)
+                .alongWith(new FeederOpenLoop(feeder, 3))
+                .alongWith(new ShooterOpenLoop(shooter, 4)));
+
+    controller
+        .button(2) // FRONT INTAKE
+        .whileTrue(
+            new FrontIntakeOpenLoop(intake, 3)
+                .alongWith(new FeederOpenLoop(feeder, 3))
+                .alongWith(new ShooterOpenLoop(shooter, -4))); */
   }
 
   /**

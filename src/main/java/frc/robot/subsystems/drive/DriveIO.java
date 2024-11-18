@@ -32,21 +32,26 @@ public interface DriveIO {
     }
   }
 
-  void readInputs(DriveIOInputs inputs);
+  default void readInputs(DriveIOInputs inputs) {}
 
-  void logModules(SwerveDrivetrain.SwerveDriveState driveState);
+  public default void logModules(SwerveDrivetrain.SwerveDriveState driveState) {}
 
-  void seedFieldRelative();
+  public default void seedFieldRelative() {}
 
-  void seedFieldRelative(Pose2d location);
+  public default void seedFieldRelative(Pose2d location) {}
 
-  void resetOdometry(Pose2d pose);
+  public default void resetOdometry(Pose2d pose) {}
 
-  Translation2d[] getModuleLocations();
+  public default Translation2d[] getModuleLocations() {
+    return new Translation2d[] {};
+  }
 
-  void setControl(frc.robot.util.swerve.SwerveRequest request);
+  public default void setControl(frc.robot.util.swerve.SwerveRequest request) {}
 
-  Command applyRequest(Supplier<SwerveRequest> requestSupplier, Subsystem subsystemRequired);
+  public default Command applyRequest(
+      Supplier<SwerveRequest> requestSupplier, Subsystem subsystemRequired) {
+    return new Command() {};
+  }
 
-  void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate);
+  public default void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {}
 }

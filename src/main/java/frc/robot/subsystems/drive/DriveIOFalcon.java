@@ -6,7 +6,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -31,14 +30,11 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
   private StatusSignal<Double> accelerationX;
   private StatusSignal<Double> accelerationY;
 
-  public RobotState robotState;
+  private SwerveDriveState state;
 
   public DriveIOFalcon(
-      RobotState robotState,
-      SwerveDrivetrainConstants driveTrainConstants,
-      SwerveModuleConstants... modules) {
+      SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
     super(driveTrainConstants, modules);
-    this.robotState = robotState;
 
     angularPitchVelocity = m_pigeon2.getAngularVelocityYDevice();
     angularRollVelocity = m_pigeon2.getAngularVelocityXDevice();
@@ -94,13 +90,11 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
   Consumer<SwerveDriveState> telemetryConsumer_ =
       swerveDriveState -> {
         double timestamp = RobotTime.getTimestampSeconds();
-        telemetryCache_.set(swerveDriveState.clone());
-        // robotState_.addOdometryMeasurement(timestamp, swerveDriveState.Pose);
+        // telemetryCache_.set(swerveDriveState.clone());
       };
 
   @Override
   public void readInputs(DriveIOInputs inputs) {
-
     inputs.fromSwerveDriveState(telemetryCache_.get());
     var gyroRotation = inputs.Pose.getRotation();
     inputs.gyroAngle = gyroRotation.getDegrees();
@@ -135,11 +129,10 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     double rollRads = Units.degreesToRadians(roll.getValueAsDouble());
     double accelX = accelerationX.getValueAsDouble();
     double accelY = accelerationY.getValueAsDouble();
-    /*   robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
+    /* robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
     pitchRads, rollRads, accelX, accelY, desiredFieldRelativeChassisSpeeds,
     measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,
-    fusedFieldRelativeChassisSpeeds);
-    */
+    fusedFieldRelativeChassisSpeeds); */
   }
 
   @Override

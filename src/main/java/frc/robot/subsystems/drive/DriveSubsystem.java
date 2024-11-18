@@ -30,10 +30,8 @@ public class DriveSubsystem extends SubsystemBase {
 
   public RobotState robotState;
 
-  public DriveSubsystem(DriveIO io, RobotState robotState) {
+  public DriveSubsystem(DriveIO io) {
     this.io = io;
-    this.robotState = robotState;
-
     configurePathPlanner();
   }
 
@@ -52,7 +50,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     AdvancedAutoBuilder.configureHolonomic(
         null,
-        (pose) -> {},
+        (pose) -> {}, // TODO FİXXXXXXXXXXXXxx
         // this::seedFieldRelative,
         null,
         (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
@@ -60,7 +58,7 @@ public class DriveSubsystem extends SubsystemBase {
             new PIDConstants(0, 0, 0),
             new PIDConstants(0, 0, 0),
             0,
-            0,
+            TunerConstants.kSpeedAt12VoltsMps,
             driveBaseRadius,
             new ReplanningConfig()),
         () ->
@@ -84,6 +82,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void setControl(SwerveRequest request) {
+
     io.setControl(request);
   }
 
