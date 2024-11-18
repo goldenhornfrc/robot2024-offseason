@@ -8,17 +8,15 @@ import org.littletonrobotics.junction.AutoLog;
 
 /** Add your docs here. */
 public interface IntakeIO {
+
   @AutoLog
-  public static class ShooterIOInputs {
+  public static class IntakeIOInputs {}
 
-  }
-
-  public default void updateInputs(ShooterIOInputs inputs) {}
+  public default void updateInputs(IntakeIOInputs inputs) {}
 
   public default void setVoltage(double frontVoltage, double backVoltage) {}
 
-  public default void setFrontIntakeVoltage(double frontVoltage){}
+  public default void setFrontIntakeVoltage(double frontVoltage) {}
 
-  public default void setBackIntakeVoltage(double backVoltage){}
-
+  public default void setBackIntakeVoltage(double backVoltage) {}
 }

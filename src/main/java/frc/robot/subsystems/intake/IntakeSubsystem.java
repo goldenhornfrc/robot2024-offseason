@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import org.littletonrobotics.junction.Logger;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -22,24 +20,22 @@ public class IntakeSubsystem extends SubsystemBase {
     this.io = io;
   }
 
-  public void setVoltage(double frontVoltage,double backVoltage) {
-    io.setVoltage(frontVoltage,backVoltage);
+  public void setVoltage(double frontVoltage, double backVoltage) {
+    io.setVoltage(frontVoltage, backVoltage);
   }
 
-  public void setBackIntakeVoltage(double backVoltage){
+  public void setBackIntakeVoltage(double backVoltage) {
     io.setBackIntakeVoltage(backVoltage);
   }
 
-
-  public void setFrontIntakeVoltage(double frontVoltage){
-    io.setBackIntakeVoltage(frontVoltage);
+  public void setFrontIntakeVoltage(double frontVoltage) {
+    io.setFrontIntakeVoltage(frontVoltage);
   }
-
 
   @Override
   public void periodic() {
-    io.updateInputs(inputs);
-    Logger.processInputs("Intake", inputs);
+    // io.updateInputs(inputs);
+    // Logger.processInputs("Intake", inputs);
     // This method will be called once per scheduler run
   }
 }
