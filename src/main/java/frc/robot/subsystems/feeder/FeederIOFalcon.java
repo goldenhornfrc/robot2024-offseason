@@ -11,13 +11,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
 import frc.robot.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class FeederIOFalcon implements FeederIO {
   // motor
-  private final TalonFX feederMotor = new TalonFX(5);
+  private final TalonFX feederMotor = new TalonFX(31, "Canivore");
   // StatusSignals
   private StatusSignal<Double> feederMotorVolts = feederMotor.getMotorVoltage();
 
@@ -31,7 +30,7 @@ public class FeederIOFalcon implements FeederIO {
     TalonFXConfiguration config = new TalonFXConfiguration();
 
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    config.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     config.CurrentLimits.SupplyCurrentLimit = 40;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -39,11 +38,10 @@ public class FeederIOFalcon implements FeederIO {
     config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0;
 
-    
-    config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor; //TODO
-    config.Feedback.FeedbackRotorOffset = 0.0;  //TODO
-    config.Feedback.RotorToSensorRatio = 1.0;   //TODO
-    config.Feedback.SensorToMechanismRatio = 1.0; //TODO
+    config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor; // TODO
+    config.Feedback.FeedbackRotorOffset = 0.0; // TODO
+    config.Feedback.RotorToSensorRatio = 1.0; // TODO
+    config.Feedback.SensorToMechanismRatio = 1.0; // TODO
 
     TalonFXUtil.applyAndCheckConfiguration(talon, config);
   }
