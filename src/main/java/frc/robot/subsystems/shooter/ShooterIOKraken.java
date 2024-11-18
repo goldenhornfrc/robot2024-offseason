@@ -16,23 +16,22 @@ import frc.robot.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class ShooterIOKraken implements ShooterIO {
-  private final TalonFX leftMotor = new TalonFX(ShooterConstants.leftMotorID,"CANAVAR");
-  private final TalonFX rightMotor = new TalonFX(ShooterConstants.rightMotorID,"CANAVAR");
-
+  private final TalonFX leftMotor = new TalonFX(ShooterConstants.leftMotorID, "Canivore");
+  private final TalonFX rightMotor = new TalonFX(ShooterConstants.rightMotorID, "Canivore");
 
   private final StatusSignal<Double> leftRPM = leftMotor.getVelocity();
   private final StatusSignal<Double> rightRPM = rightMotor.getVelocity();
   private final StatusSignal<Double> leftVoltage = leftMotor.getMotorVoltage();
   private final StatusSignal<Double> rightVoltage = rightMotor.getMotorVoltage();
 
-  private  double leftTargetRPM,rightTargetRPM = 0.0;
+  private double leftTargetRPM, rightTargetRPM = 0.0;
 
   public ShooterIOKraken() {
     configShooterTalonFX(leftMotor);
     configShooterTalonFX(rightMotor);
     leftMotor.setInverted(false);
     rightMotor.setInverted(true);
-    BaseStatusSignal.setUpdateFrequencyForAll(50.0, leftRPM, rightRPM,leftVoltage, rightVoltage);
+    BaseStatusSignal.setUpdateFrequencyForAll(50.0, leftRPM, rightRPM, leftVoltage, rightVoltage);
   }
 
   public void configShooterTalonFX(TalonFX talon) {
@@ -51,28 +50,28 @@ public class ShooterIOKraken implements ShooterIO {
     config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     config.Feedback.FeedbackRotorOffset = 0.0;
     config.Feedback.RotorToSensorRatio = 1.0;
-    config.Feedback.SensorToMechanismRatio = 1.0;
+    config.Feedback.SensorToMechanismRatio = 16 / 21;
 
     config.Audio.BeepOnBoot = true;
-    config.Audio.BeepOnConfig = false;
+    config.Audio.BeepOnConfig = true;
 
-    config.Slot0.kP = 0;
+    config.Slot0.kP = 0.15;
     config.Slot0.kI = 0;
     config.Slot0.kD = 0;
 
-    config.Slot1.kS = 0;
-    config.Slot1.kV = 0;
-    config.Slot1.kA = 0;
+    config.Slot0.kS = 0;
+    config.Slot0.kV = 0.13;
+    config.Slot0.kA = 0;
 
-    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0;
+    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.05;
+    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.05;
 
     TalonFXUtil.applyAndCheckConfiguration(talon, config);
   }
 
   @Override
   public void updateInputs(ShooterIOInputs inputs) {
-    BaseStatusSignal.refreshAll(leftRPM, rightRPM,leftVoltage, rightVoltage);
+    BaseStatusSignal.refreshAll(leftRPM, rightRPM, leftVoltage, rightVoltage);
 
     inputs.leftRPM = leftMotor.getVelocity().getValueAsDouble() * 60;
     inputs.rightRPM = leftMotor.getVelocity().getValueAsDouble() * 60;
@@ -85,7 +84,7 @@ public class ShooterIOKraken implements ShooterIO {
   }
 
   @Override
-  public void setTargetRPM(double leftRPM,double rightRPM){
+  public void setTargetRPM(double leftRPM, double rightRPM) {
     leftTargetRPM = leftRPM;
     rightTargetRPM = rightRPM;
 
@@ -94,24 +93,22 @@ public class ShooterIOKraken implements ShooterIO {
   }
 
   @Override
-  public double getLeftMotorRPM(){
-    return leftMotor.getVelocity().getValueAsDouble() / 60;
+  public double getLeftMotorRPM() {
+    return leftMotor.getVelocity().getValueAsDouble() * 60;
   }
 
   @Override
-  public double getRightMotorRPM(){
-    return rightMotor.getVelocity().getValueAsDouble() / 60;
+  public double getRightMotorRPM() {
+    return rightMotor.getVelocity().getValueAsDouble() * 60;
   }
 
   @Override
-  public double getLeftTargetRPM(){
+  public double getLeftTargetRPM() {
     return leftTargetRPM;
   }
 
   @Override
-  public double getRightTargetRPM(){
+  public double getRightTargetRPM() {
     return rightTargetRPM;
   }
-
-
 }

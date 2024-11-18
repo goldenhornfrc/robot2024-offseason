@@ -21,21 +21,21 @@ public interface ShooterIO {
 
   public default void setVoltage(double leftVoltage, double rightVoltage) {}
 
-  public default void setTargetRPM(double leftRPM,double rightRPM){}
+  public default void setTargetRPM(double leftRPM, double rightRPM) {}
 
-  public default double getLeftTargetRPM(){
+  public default double getLeftTargetRPM() {
     return 0.0;
   }
 
-  public default double getRightTargetRPM(){
+  public default double getRightTargetRPM() {
     return 0.0;
   }
 
-  public default double getRightMotorRPM(){
+  public default double getRightMotorRPM() {
     return 0.0;
   }
 
-  public default double getLeftMotorRPM(){
+  public default double getLeftMotorRPM() {
     return 0.0;
   }
 }
