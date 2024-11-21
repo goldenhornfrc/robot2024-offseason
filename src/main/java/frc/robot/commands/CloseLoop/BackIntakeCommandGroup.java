@@ -7,9 +7,8 @@ package frc.robot.commands.CloseLoop;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import frc.robot.commands.OpenLoop.BackIntakeOpenLoop;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
-import frc.robot.commands.OpenLoop.FrontIntakeOpenLoop;
-import frc.robot.commands.OpenLoop.ShooterOpenLoop;
 import frc.robot.subsystems.feeder.FeederSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -18,26 +17,26 @@ import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
-public class FrontIntakeHasNote extends SequentialCommandGroup {
-  /** Creates a new FrontIntakeHasNote. */
-  public FrontIntakeHasNote(
-      ShooterPivotSubsystem mPivot,
+public class BackIntakeCommandGroup extends SequentialCommandGroup {
+  /** Creates a new BackIntakeHasNote. */
+  public BackIntakeCommandGroup(
+      FeederSubsystem mFeeder,
+      IntakeSubsystem mBackIntake,
       ShooterSubsystem mShooter,
-      IntakeSubsystem mFrontIntake,
-      FeederSubsystem mFeeder) {
+      ShooterPivotSubsystem mPivot) {
     // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
+    // addCommands(new FooCommand(), new BarCommand();
     addCommands(
-        new SetPivotAngle(mPivot, 0, false)
+        new SetPivotAngle(mPivot, 50, true)
             .andThen(
-                new WaitUntilCommand(mFeeder::getBothSensor)
+                new WaitForBackSensor(mFeeder)
                     .raceWith(
                         Commands.parallel(
-                            new FrontIntakeOpenLoop(mFrontIntake, 6),
-                            new ShooterOpenLoop(mShooter, -6)))
-                    .andThen(
-                        new WaitUntilCommand(mFeeder::getFrontSensor)
-                            .raceWith(Commands.parallel(new FeederOpenLoop(mFeeder, -4))))
-                    .andThen(new FeederOpenLoop(mFeeder, 2).withTimeout(0.2))));
+                            new BackIntakeOpenLoop(mBackIntake, 5),
+                            new FeederOpenLoop(mFeeder, 3))))
+            .andThen(
+                new WaitUntilCommand(mFeeder::getFrontSensor)
+                    .raceWith(
+                        new FeederOpenLoop(mFeeder, 2), new BackIntakeOpenLoop(mBackIntake, 4))));
   }
 }
