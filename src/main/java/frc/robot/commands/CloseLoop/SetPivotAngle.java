@@ -38,16 +38,14 @@ public class SetPivotAngle extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    shooterPivot.setVoltage(0);
+    if (!shouldHold) {
+      shooterPivot.setVoltage(0);
+    }
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    if (!shouldHold) {
-      return Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 1;
-    } else {
-      return false;
-    }
+    return Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 1.0;
   }
 }

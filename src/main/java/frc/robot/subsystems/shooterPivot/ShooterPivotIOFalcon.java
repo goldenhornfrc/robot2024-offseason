@@ -74,7 +74,7 @@ public class ShooterPivotIOFalcon implements ShooterPivotIO {
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 119.0 / 360.0;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 3.0 / 360.0;
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.5 / 360.0;
 
     TalonFXUtil.applyAndCheckConfiguration(shooterPivotMotor, config);
   }

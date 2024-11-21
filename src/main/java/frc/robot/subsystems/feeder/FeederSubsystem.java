@@ -5,6 +5,7 @@
 package frc.robot.subsystems.feeder;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
@@ -12,8 +13,8 @@ import org.littletonrobotics.junction.inputs.LoggableInputs;
 public class FeederSubsystem extends SubsystemBase {
   private final FeederIO io;
   private final FeederIOInputsAutoLogged inputs = new FeederIOInputsAutoLogged();
-  private final DigitalInput frontSensor = new DigitalInput(0);
-  private final DigitalInput backSensor = new DigitalInput(1);
+  private final DigitalInput frontSensor = new DigitalInput(2);
+  private final DigitalInput backSensor = new DigitalInput(3);
 
   public FeederSubsystem(FeederIO io) {
     this.io = io;
@@ -42,6 +43,8 @@ public class FeederSubsystem extends SubsystemBase {
 
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("BackSensor", getBackSensor());
+    SmartDashboard.putBoolean("FrontSensor", getFrontSensor());
     io.updateInputs(inputs);
     Logger.processInputs("Feeder", (LoggableInputs) inputs); // !!!!!
 

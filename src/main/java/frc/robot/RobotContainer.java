@@ -20,12 +20,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.commands.CloseLoop.BackIntakeCommandGroup;
 import frc.robot.commands.CloseLoop.DefaultDriveCommand;
+import frc.robot.commands.CloseLoop.FrontIntakeCommandGroup;
 import frc.robot.commands.CloseLoop.SetPivotAngle;
+import frc.robot.commands.CloseLoop.SetShooterRPM;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
-import frc.robot.commands.OpenLoop.ShooterOpenLoop;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOFalcon;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -132,21 +135,25 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getLeftY(), 0.05),
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
             () -> MathUtil.applyDeadband(controller.getRightX(), 0.05),
-            () -> false));
+            () -> true));
     controller.cross().onTrue(new SetPivotAngle(pivot, 60, true));
-    controller.triangle().onTrue(new SetPivotAngle(pivot, 119, true));
-    controller.circle().whileTrue(new ShooterOpenLoop(shooter, 3));
-    controller.square().whileTrue(new FeederOpenLoop(feeder, 6));
+    controller.triangle().onTrue(new SetPivotAngle(pivot, 0, false));
+    controller.circle().whileTrue(new FeederOpenLoop(feeder, 4));
+    controller
+        .square()
+        .onTrue(
+            new InstantCommand(
+                () -> {
+                  drive.setTargetHeading(50);
+                }));
+    controller.R1().whileTrue(new BackIntakeCommandGroup(feeder, intake, shooter, pivot));
+    controller.L1().whileTrue(new FrontIntakeCommandGroup(pivot, shooter, intake, feeder));
 
-    /*  controller
-        .circle()
-        .whileTrue(
-            new BackIntakeOpenLoop(intake, 5)
-                .alongWith(new FeederOpenLoop(feeder, 6))
-                .alongWith(new ShooterOpenLoop(shooter, 4)));
+    controller.L2().whileTrue(new SetShooterRPM(shooter, 4000, 4000));
+
     // controller.triangle().whileTrue(new FeederOpenLoop(feeder, 10));
     // controller.square().whileTrue(new ShooterPivotOpenLoop(pivot, -2));
-    controller.square().whileTrue(new SetShooterRPM(shooter, 3000, 3000));
+    // controller.square().whileTrue(new SetShooterRPM(shooter, 3000, 3000));
     /*  controller
     .triangle()
     .whileTrue(

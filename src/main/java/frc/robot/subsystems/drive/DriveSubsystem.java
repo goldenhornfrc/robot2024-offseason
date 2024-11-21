@@ -1,10 +1,12 @@
 package frc.robot.subsystems.drive;
 
+import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.team254.lib.pathplanner.AdvancedAutoBuilder;
 import com.team254.lib.pathplanner.AdvancedHolonomicPathFollowerConfig;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -18,6 +20,7 @@ import frc.robot.util.swerve.*;
 import frc.robot.util.swerve.SwerveModule.DriveRequestType;
 import java.util.Optional;
 import java.util.function.Supplier;
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class DriveSubsystem extends SubsystemBase {
@@ -25,13 +28,33 @@ public class DriveSubsystem extends SubsystemBase {
 
   DriveIOInputsAutoLogged inputs = new DriveIOInputsAutoLogged();
 
+  private static final PIDController headingLockController = new PIDController(0.03, 0.0, 0.001);
+
+  public final SwerveRequest.FieldCentricFacingAngle fieldCentricHeadingLockRequest =
+      new SwerveRequest.FieldCentricFacingAngle()
+          .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
   private final SwerveRequest.ApplyChassisSpeeds autoRequest =
       new SwerveRequest.ApplyChassisSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
+  public enum DriveState {
+    OPEN_LOOP,
+    HEADING_LOCK
+  }
+
+  private DriveState driveState = DriveState.OPEN_LOOP;
+
+  private double targetHeading = 0.0;
+  private boolean wantsHeadingLock = false;
   public RobotState robotState;
 
   public DriveSubsystem(DriveIO io) {
     this.io = io;
+
+    fieldCentricHeadingLockRequest.HeadingController = new PhoenixPIDController(0.1, 0, 0.1);
+    fieldCentricHeadingLockRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+    fieldCentricHeadingLockRequest.HeadingController.setTolerance(Math.PI / 180.0);
+
     configurePathPlanner();
   }
 
@@ -97,6 +120,32 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void seedFieldRelative(Pose2d location) {
     io.seedFieldRelative(location);
+  }
+
+  @AutoLogOutput(key = "getTargetheading")
+  public double getTargetHeading() {
+    return targetHeading;
+  }
+
+  public void setTargetHeading(double heading) {
+    targetHeading = heading;
+  }
+
+  @AutoLogOutput(key = "getWantsHeadingLock")
+  public boolean getWantsHeadingLock() {
+    return wantsHeadingLock;
+  }
+
+  public void setWantsHeadingLock(boolean newWantsHeadingLock) {
+    wantsHeadingLock = newWantsHeadingLock;
+  }
+
+  public void setDriveState(DriveState state) {
+    driveState = state;
+  }
+
+  public DriveState getDriveState() {
+    return driveState;
   }
 
   public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {

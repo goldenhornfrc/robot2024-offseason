@@ -50,21 +50,21 @@ public class ShooterIOKraken implements ShooterIO {
     config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     config.Feedback.FeedbackRotorOffset = 0.0;
     config.Feedback.RotorToSensorRatio = 1.0;
-    config.Feedback.SensorToMechanismRatio = 16 / 21;
+    config.Feedback.SensorToMechanismRatio = 16.0 / 21.0;
 
     config.Audio.BeepOnBoot = true;
     config.Audio.BeepOnConfig = true;
 
-    config.Slot0.kP = 0.15;
+    config.Slot0.kP = 0.135;
     config.Slot0.kI = 0;
     config.Slot0.kD = 0;
 
     config.Slot0.kS = 0;
-    config.Slot0.kV = 0.13;
+    config.Slot0.kV = 0.103;
     config.Slot0.kA = 0;
 
-    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.05;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.05;
+    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.121907;
+    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.12;
 
     TalonFXUtil.applyAndCheckConfiguration(talon, config);
   }
