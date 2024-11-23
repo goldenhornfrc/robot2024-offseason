@@ -43,6 +43,14 @@ public class Robot extends LoggedRobot {
 
   private final SendableChooser<Alliance> m_allianceChooser = new SendableChooser<>();
 
+  public enum RobotState {
+    AMP,
+    SPEAKER,
+    IDLE,
+  }
+
+  private static RobotState state = RobotState.IDLE;
+
   @Override
   public void robotInit() {
 
@@ -54,7 +62,7 @@ public class Robot extends LoggedRobot {
     switch (Constants.currentMode) {
       case REAL:
         // Running on a real robot, log to a USB stick ("/U/logs")
-        Logger.addDataReceiver(new WPILOGWriter());
+        // Logger.addDataReceiver(new WPILOGWriter());
         Logger.addDataReceiver(new NT4Publisher());
         break;
 
@@ -127,6 +135,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {
     RobotContainer.drive.seedFieldRelative();
+    // RobotContainer.drive.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
@@ -136,9 +145,20 @@ public class Robot extends LoggedRobot {
     }
   }
 
+  public static void setRobotState(RobotState RobotState) {
+    state = RobotState;
+  }
+
+  public static RobotState getRobotState() {
+    return state;
+  }
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    if (state == RobotState.SPEAKER || state == RobotState.IDLE) {
+      RobotContainer.feeder.setButtonPressed(false);
+    }
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override

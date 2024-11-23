@@ -16,6 +16,8 @@ public class FeederSubsystem extends SubsystemBase {
   private final DigitalInput frontSensor = new DigitalInput(2);
   private final DigitalInput backSensor = new DigitalInput(3);
 
+  private boolean isPressed = false;
+
   public FeederSubsystem(FeederIO io) {
     this.io = io;
   }
@@ -31,6 +33,14 @@ public class FeederSubsystem extends SubsystemBase {
 
   public boolean getFrontSensor() {
     return !frontSensor.get();
+  }
+
+  public void setButtonPressed(boolean pressed) {
+    isPressed = pressed;
+  }
+
+  public boolean getButtonPress() {
+    return isPressed;
   }
 
   public boolean getBothSensor() {

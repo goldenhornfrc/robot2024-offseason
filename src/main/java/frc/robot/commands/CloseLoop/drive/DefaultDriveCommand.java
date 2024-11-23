@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.CloseLoop;
+package frc.robot.commands.CloseLoop.drive;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -43,9 +43,6 @@ public class DefaultDriveCommand extends Command {
     this.rotSupplier = rotSupplier;
     this.fieldOrientedSupplier = fieldOriented;
 
-    driveWithHeading.HeadingController.setPID(0, 0, 0);
-    driveWithHeading.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
-
     addRequirements(m_drive);
   }
 
@@ -61,7 +58,7 @@ public class DefaultDriveCommand extends Command {
 
     switch (currentState) {
       case OPEN_LOOP:
-        m_drive.fieldCentricHeadingLockRequest.HeadingController.setP(0.1);
+        //m_drive.fieldCentricHeadingLockRequest.HeadingController.setP(0.1);
         m_drive.setControl(
             fieldOrientedSupplier.getAsBoolean()
                 ? new SwerveRequest.FieldCentric()

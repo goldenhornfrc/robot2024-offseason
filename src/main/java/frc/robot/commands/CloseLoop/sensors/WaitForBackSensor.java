@@ -2,17 +2,17 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.commands.CloseLoop;
+package frc.robot.commands.CloseLoop.sensors;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.feeder.FeederSubsystem;
 
-public class WaitForFrontSensor extends Command {
-  private final FeederSubsystem mFeeder;
-
-  /** Creates a new WaitForFrontSensor. */
-  public WaitForFrontSensor(FeederSubsystem mFeeder) {
-    this.mFeeder = mFeeder; // Use addRequirements() here to declare subsystem dependencies.
+public class WaitForBackSensor extends Command {
+  private FeederSubsystem mFeeder;
+  /** Creates a new WaitForBackSensor. */
+  public WaitForBackSensor(FeederSubsystem mFeeder) {
+    this.mFeeder = mFeeder;
+    // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
@@ -30,6 +30,6 @@ public class WaitForFrontSensor extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return mFeeder.getFrontSensor();
+    return mFeeder.getBackSensor();
   }
 }

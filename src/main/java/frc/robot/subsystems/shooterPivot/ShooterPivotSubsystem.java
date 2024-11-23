@@ -22,6 +22,12 @@ public class ShooterPivotSubsystem extends SubsystemBase {
   StructPublisher<Pose3d> publisher =
       NetworkTableInstance.getDefault().getStructTopic("MyPose", Pose3d.struct).publish();
 
+  public enum ShooterState {
+    IDLE,
+    AMP_ANGLE,
+    SPEAKER_ANGLE
+  }
+
   public ShooterPivotSubsystem(ShooterPivotIO io) {
     this.io = io;
   }

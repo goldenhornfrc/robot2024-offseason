@@ -20,18 +20,24 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.commands.CloseLoop.BackIntakeCommandGroup;
-import frc.robot.commands.CloseLoop.DefaultDriveCommand;
-import frc.robot.commands.CloseLoop.FrontIntakeCommandGroup;
-import frc.robot.commands.CloseLoop.SetPivotAngle;
-import frc.robot.commands.CloseLoop.SetShooterRPM;
+import frc.robot.Robot.RobotState;
+import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
+import frc.robot.commands.CloseLoop.Amp.AmpStep2Command;
+import frc.robot.commands.CloseLoop.backIntake.BackIntakeCommandGroup;
+import frc.robot.commands.CloseLoop.drive.DefaultDriveCommand;
+import frc.robot.commands.CloseLoop.feeder.FeedWhenReady;
+import frc.robot.commands.CloseLoop.frontIntake.FrontIntakeCommandGroup;
+import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
+import frc.robot.commands.CloseLoop.shooter.SetShooterRPM;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOFalcon;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem.DriveState;
 import frc.robot.subsystems.feeder.FeederIO;
 import frc.robot.subsystems.feeder.FeederIOFalcon;
 import frc.robot.subsystems.feeder.FeederSubsystem;
@@ -144,39 +150,28 @@ public class RobotContainer {
         .onTrue(
             new InstantCommand(
                 () -> {
-                  drive.setTargetHeading(50);
+                  drive.setTargetHeading(90);
+                  drive.setDriveState(DriveState.HEADING_LOCK);
+                }))
+        .onFalse(
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.OPEN_LOOP);
                 }));
     controller.R1().whileTrue(new BackIntakeCommandGroup(feeder, intake, shooter, pivot));
     controller.L1().whileTrue(new FrontIntakeCommandGroup(pivot, shooter, intake, feeder));
 
-    controller.L2().whileTrue(new SetShooterRPM(shooter, 4000, 4000));
-
-    // controller.triangle().whileTrue(new FeederOpenLoop(feeder, 10));
-    // controller.square().whileTrue(new ShooterPivotOpenLoop(pivot, -2));
-    // controller.square().whileTrue(new SetShooterRPM(shooter, 3000, 3000));
-    /*  controller
-    .triangle()
-    .whileTrue(
-        new FrontIntakeOpenLoop(intake, 5)
-            .alongWith(new ShooterOpenLoop(shooter, -5))
-            .alongWith(new FeederOpenLoop(feeder, -2))); */
-    // controller.y().whileTrue(new ShooterPivotOpenLoop(pivot, 3.5));
-    // controller.x().whileTrue(new SetShooterRPM(shooter, 2000, 2000));
-    // controller.b().whileTrue(new SetPivotAngle(pivot, 15));
-
-    /*controller
-        .button(1) // BACK INTAKE
-        .whileTrue(
-            new BackIntakeOpenLoop(intake, 3)
-                .alongWith(new FeederOpenLoop(feeder, 3))
-                .alongWith(new ShooterOpenLoop(shooter, 4)));
-
     controller
-        .button(2) // FRONT INTAKE
-        .whileTrue(
-            new FrontIntakeOpenLoop(intake, 3)
-                .alongWith(new FeederOpenLoop(feeder, 3))
-                .alongWith(new ShooterOpenLoop(shooter, -4))); */
+        .povUp()
+        .onTrue(
+            new ConditionalCommand(
+                new AmpStep2Command(feeder, shooter, drive, pivot).andThen(getIdleCommand()),
+                new AmpStep1Command(drive, pivot, feeder),
+                feeder::getButtonPress));
+
+    controller.L2().whileTrue(new FeedWhenReady(drive, shooter, feeder, pivot));
+
+    controller.R2().whileTrue(getSpeakerShot()).onFalse(getIdleCommand());
   }
 
   /**
@@ -215,5 +210,24 @@ public class RobotContainer {
           .map(Path::toString)
           .collect(Collectors.toSet());
     }
+  }
+
+  public Command getSpeakerShot() {
+    return new SetPivotAngle(pivot, 40, true)
+        .alongWith(new SetShooterRPM(shooter, 3500, 3500))
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  Robot.setRobotState(RobotState.SPEAKER);
+                }));
+  }
+
+  public Command getIdleCommand() {
+    return new SetPivotAngle(pivot, 0, false)
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  Robot.setRobotState(RobotState.IDLE);
+                }));
   }
 }

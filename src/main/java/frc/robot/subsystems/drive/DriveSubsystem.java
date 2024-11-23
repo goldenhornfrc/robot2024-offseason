@@ -9,9 +9,11 @@ import com.team254.lib.pathplanner.AdvancedHolonomicPathFollowerConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.RobotState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
@@ -28,7 +30,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   DriveIOInputsAutoLogged inputs = new DriveIOInputsAutoLogged();
 
-  private static final PIDController headingLockController = new PIDController(0.03, 0.0, 0.001);
+  private static final PIDController headingLockController = new PIDController(10.0, 0.0, 0.0);
 
   public final SwerveRequest.FieldCentricFacingAngle fieldCentricHeadingLockRequest =
       new SwerveRequest.FieldCentricFacingAngle()
@@ -51,7 +53,7 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem(DriveIO io) {
     this.io = io;
 
-    fieldCentricHeadingLockRequest.HeadingController = new PhoenixPIDController(0.1, 0, 0.1);
+    fieldCentricHeadingLockRequest.HeadingController = new PhoenixPIDController(5.0, 0, 0.0);
     fieldCentricHeadingLockRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
     fieldCentricHeadingLockRequest.HeadingController.setTolerance(Math.PI / 180.0);
 
@@ -59,7 +61,9 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {}
+  public void periodic() {
+    SmartDashboard.putNumber("Heading", targetHeading);
+  }
 
   public void resetOdometry(Pose2d pose) {
     io.resetOdometry(pose);
@@ -146,6 +150,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   public DriveState getDriveState() {
     return driveState;
+  }
+
+  public ChassisSpeeds getChassisSpeeds() {
+    return io.getKinematics().toChassisSpeeds(inputs.ModuleStates);
   }
 
   public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {

@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
@@ -44,6 +45,10 @@ public interface DriveIO {
 
   public default Translation2d[] getModuleLocations() {
     return new Translation2d[] {};
+  }
+
+  public default SwerveDriveKinematics getKinematics() {
+    return new SwerveDriveKinematics(getModuleLocations());
   }
 
   public default void setControl(frc.robot.util.swerve.SwerveRequest request) {}

@@ -40,9 +40,10 @@ public class IntakeIOSpark implements IntakeIO {
         () -> true,
         "Failed to set Velocity Conversion Factor! - ID: " + motorID);
     SparkMaxUtil.applyParameter(
-        () -> frontIntake.setOpenLoopRampRate(0.05),
+        () -> frontIntake.setOpenLoopRampRate(0.0),
         () -> true,
         "Failed to set Open Loop Ramp! - ID: " + motorID);
+
     SparkMaxUtil.applyParameter(
         () -> frontIntake.setClosedLoopRampRate(0),
         () -> true,
@@ -80,7 +81,7 @@ public class IntakeIOSpark implements IntakeIO {
         () -> true,
         "Failed to set Velocity Conversion Factor! - ID: " + motor2ID);
     SparkMaxUtil.applyParameter(
-        () -> backIntake.setOpenLoopRampRate(0.05),
+        () -> backIntake.setOpenLoopRampRate(0.1),
         () -> true,
         "Failed to set Open Loop Ramp! - ID: " + motor2ID);
     SparkMaxUtil.applyParameter(

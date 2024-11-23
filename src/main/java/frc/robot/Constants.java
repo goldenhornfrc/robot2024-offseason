@@ -15,6 +15,9 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.lib.InterpolatingDouble;
+import frc.robot.lib.InterpolatingTreeMap;
+import frc.robot.lib.ShootingParameters;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 
@@ -65,7 +68,7 @@ public final class Constants {
   }
 
   public static boolean kIsReplay = false;
-  public static final Mode currentMode = Mode.SIM;
+  public static final Mode currentMode = Mode.REAL;
 
   public static enum Mode {
     /** Running on a real robot. */
@@ -77,4 +80,46 @@ public final class Constants {
     /** Replaying from a log file. */
     REPLAY
   }
+
+  public static double[][] kRPMValues = {
+    {7.41, 6500.0},
+    {5.31, 4000.0},
+    {4.81, 4000.0},
+    {4.31, 4000.0},
+    {3.81, 4000.0},
+    {3.31, 4000.0},
+    {2.81, 4000.0},
+    {2.31, 4000.0},
+    {1.81, 4000.0},
+    {1.31, 4000.0},
+    {0.0, 0.0}
+  };
+
+  public static double[][] kPivotValues = {
+    {1.31, 60.0},
+    {0.0, 60.0}
+  };
+
+  public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kPivotMap =
+      new InterpolatingTreeMap<>();
+  public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kRPMMap =
+      new InterpolatingTreeMap<>();
+
+  static {
+    for (double[] pair : kRPMValues) {
+      kRPMMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
+    }
+
+    for (double[] pair : kPivotValues) {
+      kPivotMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
+    }
+  }
+
+  public static final ShootingParameters kShootingParams =
+      new ShootingParameters(
+          kPivotMap,
+          kRPMMap, // rpm map
+          60.0, // shooter allowable error (rpm)
+          0.50 // pivot allowable error (°)
+          );
 }
