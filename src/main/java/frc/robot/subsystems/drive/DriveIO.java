@@ -51,6 +51,10 @@ public interface DriveIO {
     return new SwerveDriveKinematics(getModuleLocations());
   }
 
+  public default Pose2d getPose() {
+    return new Pose2d();
+  }
+
   public default void setControl(frc.robot.util.swerve.SwerveRequest request) {}
 
   public default Command applyRequest(

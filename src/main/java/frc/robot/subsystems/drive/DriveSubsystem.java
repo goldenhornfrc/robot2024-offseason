@@ -6,7 +6,6 @@ import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
 import com.team254.lib.pathplanner.AdvancedAutoBuilder;
 import com.team254.lib.pathplanner.AdvancedHolonomicPathFollowerConfig;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -29,8 +28,6 @@ public class DriveSubsystem extends SubsystemBase {
   DriveIO io;
 
   DriveIOInputsAutoLogged inputs = new DriveIOInputsAutoLogged();
-
-  private static final PIDController headingLockController = new PIDController(10.0, 0.0, 0.0);
 
   public final SwerveRequest.FieldCentricFacingAngle fieldCentricHeadingLockRequest =
       new SwerveRequest.FieldCentricFacingAngle()
@@ -63,6 +60,7 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("Heading", targetHeading);
+    SmartDashboard.putString("Pose", getPose().toString());
   }
 
   public void resetOdometry(Pose2d pose) {
@@ -154,6 +152,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   public ChassisSpeeds getChassisSpeeds() {
     return io.getKinematics().toChassisSpeeds(inputs.ModuleStates);
+  }
+
+  public Pose2d getPose() {
+    return io.getPose();
   }
 
   public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {

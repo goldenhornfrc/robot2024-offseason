@@ -1,12 +1,9 @@
 package frc.robot.subsystems.drive;
 
-import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
@@ -37,6 +34,7 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
       SwerveDrivetrainConstants driveTrainConstants, SwerveModuleConstants... modules) {
     super(driveTrainConstants, modules);
 
+    /*
     angularPitchVelocity = m_pigeon2.getAngularVelocityYDevice();
     angularRollVelocity = m_pigeon2.getAngularVelocityXDevice();
     angularYawVelocity = m_pigeon2.getAngularVelocityZDevice();
@@ -56,6 +54,7 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
         accelerationY);
 
     registerTelemetry(telemetryConsumer_);
+     */
   }
 
   public void resetOdometry(Pose2d pose) {
@@ -92,6 +91,10 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     }
   }
 
+  public Pose2d getPose() {
+    return this.getState().Pose;
+  }
+
   Consumer<SwerveDriveState> telemetryConsumer_ =
       swerveDriveState -> {
         double timestamp = RobotTime.getTimestampSeconds();
@@ -100,6 +103,7 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
 
   @Override
   public void readInputs(DriveIOInputs inputs) {
+    /*
     inputs.fromSwerveDriveState(telemetryCache_.get());
     var gyroRotation = inputs.Pose.getRotation();
     inputs.gyroAngle = gyroRotation.getDegrees();
@@ -134,6 +138,7 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     double rollRads = Units.degreesToRadians(roll.getValueAsDouble());
     double accelX = accelerationX.getValueAsDouble();
     double accelY = accelerationY.getValueAsDouble();
+     */
     /* robotState_.addDriveMotionMeasurements(timestamp, rollRadsPerS, pitchRadsPerS, yawRadsPerS,
     pitchRads, rollRads, accelX, accelY, desiredFieldRelativeChassisSpeeds,
     measuredRobotRelativeChassisSpeeds, measuredFieldRelativeChassisSpeeds,

@@ -15,6 +15,7 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.lib.InterpolatingDouble;
 import frc.robot.lib.InterpolatingTreeMap;
 import frc.robot.lib.ShootingParameters;
@@ -63,7 +64,12 @@ public final class Constants {
 
   public static class DriveConstants {
     public static final double kMaxVel = 5;
-    public static final double kMaxAngularVel = 2.5 * Math.PI;
+    public static final double kMaxAngularVel = Units.degreesToRadians(360 * 1.15);
+    public static final double kSteerJoystickDeadband = 0.05;
+    public static final double kHeadingControllerP = 3.5;
+    public static final double kHeadingControllerI = 0.0;
+    public static final double kHeadingControllerD = 0.0;
+
     public static final CommandSwerveDrivetrain kDriveTrain = TunerConstants.DriveTrain;
   }
 
@@ -120,6 +126,6 @@ public final class Constants {
           kPivotMap,
           kRPMMap, // rpm map
           60.0, // shooter allowable error (rpm)
-          0.50 // pivot allowable error (°)
+          1.0 // pivot allowable error (°)
           );
 }

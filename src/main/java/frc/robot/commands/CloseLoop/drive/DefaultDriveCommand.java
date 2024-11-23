@@ -58,7 +58,7 @@ public class DefaultDriveCommand extends Command {
 
     switch (currentState) {
       case OPEN_LOOP:
-        //m_drive.fieldCentricHeadingLockRequest.HeadingController.setP(0.1);
+        // m_drive.fieldCentricHeadingLockRequest.HeadingController.setP(0.1);
         m_drive.setControl(
             fieldOrientedSupplier.getAsBoolean()
                 ? new SwerveRequest.FieldCentric()

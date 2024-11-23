@@ -28,7 +28,7 @@ import frc.robot.Robot.RobotState;
 import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
 import frc.robot.commands.CloseLoop.Amp.AmpStep2Command;
 import frc.robot.commands.CloseLoop.backIntake.BackIntakeCommandGroup;
-import frc.robot.commands.CloseLoop.drive.DefaultDriveCommand;
+import frc.robot.commands.CloseLoop.drive.DriveCommand;
 import frc.robot.commands.CloseLoop.feeder.FeedWhenReady;
 import frc.robot.commands.CloseLoop.frontIntake.FrontIntakeCommandGroup;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
@@ -136,15 +136,16 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     drive.setDefaultCommand(
-        new DefaultDriveCommand(
+        new DriveCommand(
             drive,
             () -> MathUtil.applyDeadband(controller.getLeftY(), 0.05),
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
-            () -> MathUtil.applyDeadband(controller.getRightX(), 0.05),
-            () -> true));
+            () -> MathUtil.applyDeadband(-controller.getRightX(), 0.05)));
+
     controller.cross().onTrue(new SetPivotAngle(pivot, 60, true));
     controller.triangle().onTrue(new SetPivotAngle(pivot, 0, false));
     controller.circle().whileTrue(new FeederOpenLoop(feeder, 4));
+
     controller
         .square()
         .onTrue(
@@ -158,6 +159,7 @@ public class RobotContainer {
                 () -> {
                   drive.setDriveState(DriveState.OPEN_LOOP);
                 }));
+
     controller.R1().whileTrue(new BackIntakeCommandGroup(feeder, intake, shooter, pivot));
     controller.L1().whileTrue(new FrontIntakeCommandGroup(pivot, shooter, intake, feeder));
 

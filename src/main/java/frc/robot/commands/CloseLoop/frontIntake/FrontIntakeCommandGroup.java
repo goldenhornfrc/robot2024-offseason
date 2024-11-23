@@ -31,12 +31,13 @@ public class FrontIntakeCommandGroup extends SequentialCommandGroup {
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
         new SetPivotAngle(mPivot, 0, false)
+            .alongWith(new ShooterOpenLoop(mShooter, 6))
             .andThen(
                 new WaitForBackSensor(mFeeder)
                     .raceWith(
                         Commands.parallel(
-                            new FrontIntakeOpenLoop(mFrontIntake, 5),
                             new ShooterOpenLoop(mShooter, -5.5),
+                            new FrontIntakeOpenLoop(mFrontIntake, 5),
                             new FeederOpenLoop(mFeeder, -1.5)))
                     .andThen(
                         new WaitUntilCommand(mFeeder::getFrontSensor)
