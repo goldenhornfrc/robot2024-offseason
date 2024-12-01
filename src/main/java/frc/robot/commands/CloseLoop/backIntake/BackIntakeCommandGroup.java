@@ -40,6 +40,6 @@ public class BackIntakeCommandGroup extends SequentialCommandGroup {
                 new WaitUntilCommand(mFeeder::getFrontSensor)
                     .raceWith(
                         new FeederOpenLoop(mFeeder, 2), new BackIntakeOpenLoop(mBackIntake, 4)))
-            .andThen(new FeederOpenLoop(mFeeder, -2).withTimeout(0.25)));
+            .andThen(new FeederOpenLoop(mFeeder, -2).withTimeout(0.1)));
   }
 }
