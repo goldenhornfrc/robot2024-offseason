@@ -4,6 +4,7 @@
 
 package frc.robot.commands.CloseLoop.drive;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
@@ -113,6 +114,38 @@ public class DriveCommand extends Command {
 
       Logger.recordOutput("DriveCommand/Mode", "TargetHeading");
       Logger.recordOutput("DriveCommand/targetHeading", targetHeading.getDegrees());
+    }
+
+    if (currentState == DriveState.INTAKE_STATE) {
+
+      var xVel = MathUtil.clamp(throttleFieldFrame, -0.4, 0.4);
+      var yVel = MathUtil.clamp(strafeFieldFrame, -0.4, 0.4);
+
+      if (Math.abs(turnFieldFrame) > Constants.DriveConstants.kSteerJoystickDeadband
+          || (Util.epsilonEquals(mJoystickLastTouched, Timer.getFPGATimestamp(), 0.25)
+              && Math.abs(mDrivetrain.getChassisSpeeds().omegaRadiansPerSecond)
+                  > Math.toRadians(10))) {
+        turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
+        mDrivetrain.setControl(
+            driveNoHeading
+                .withVelocityX(xVel)
+                .withVelocityY(yVel)
+                .withRotationalRate(turnFieldFrame));
+        mHeadingSetpoint = Optional.empty();
+        Logger.recordOutput("DriveMaintainHeading/Mode", "NoHeading");
+      } else {
+        if (mHeadingSetpoint.isEmpty()) {
+          mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
+        }
+        mDrivetrain.setControl(
+            driveWithHeading
+                .withVelocityX(xVel)
+                .withVelocityY(yVel)
+                .withTargetDirection(mHeadingSetpoint.get()));
+        Logger.recordOutput("DriveMaintainHeading/Mode", "Heading");
+        Logger.recordOutput(
+            "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
+      }
     }
   }
 

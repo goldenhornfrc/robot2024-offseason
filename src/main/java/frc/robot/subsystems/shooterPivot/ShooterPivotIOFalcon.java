@@ -56,25 +56,31 @@ public class ShooterPivotIOFalcon implements ShooterPivotIO {
     config.Audio.BeepOnBoot = true;
     config.Audio.BeepOnConfig = true;
 
-    config.Slot0.kS = 0;
+    config.Slot0.kS = 0.0;
     config.Slot0.kV = 0;
     config.Slot0.kA = 0;
 
-    config.Slot0.kP = 144 * 4;
+    config.Slot0.kP = 190 * 4;
     config.Slot0.kI = 0;
-    config.Slot0.kD = 0.0;
+    config.Slot0.kD = 0.2;
 
     config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.05;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.05;
 
-    config.MotionMagic.MotionMagicCruiseVelocity = 1;
-    config.MotionMagic.MotionMagicAcceleration = 1.2;
+    config.MotionMagic.MotionMagicCruiseVelocity = 2.0;
+    config.MotionMagic.MotionMagicAcceleration = 2.0;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 119.0 / 360.0;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.5 / 360.0;
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 121.0 / 360.0;
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.2 / 360.0;
+
+    config.CurrentLimits.SupplyCurrentLimit = 40.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.CurrentLimits.StatorCurrentLimit = 40.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyAndCheckConfiguration(shooterPivotMotor, config);
   }

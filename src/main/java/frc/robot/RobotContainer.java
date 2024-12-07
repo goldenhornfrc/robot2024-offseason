@@ -20,8 +20,10 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot.RobotState;
@@ -32,8 +34,12 @@ import frc.robot.commands.CloseLoop.drive.DriveCommand;
 import frc.robot.commands.CloseLoop.feeder.FeedWhenReady;
 import frc.robot.commands.CloseLoop.frontIntake.FrontIntakeCommandGroup;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
+import frc.robot.commands.CloseLoop.sensors.WaitForBackSensor;
 import frc.robot.commands.CloseLoop.shooter.SetShooterRPM;
+import frc.robot.commands.OpenLoop.BothIntakeOpenLoop;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
+import frc.robot.commands.OpenLoop.FrontIntakeOpenLoop;
+import frc.robot.commands.OpenLoop.ShooterOpenLoop;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOFalcon;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -160,8 +166,26 @@ public class RobotContainer {
                   drive.setDriveState(DriveState.OPEN_LOOP);
                 }));
 
-    controller.R1().whileTrue(new BackIntakeCommandGroup(feeder, intake, shooter, pivot));
-    controller.L1().whileTrue(new FrontIntakeCommandGroup(pivot, shooter, intake, feeder));
+    controller
+        .R1()
+        .whileTrue(getBackIntakeGroupCommand())
+        .onFalse(
+            getIdleCommand()
+                .alongWith(
+                    new InstantCommand(
+                        () -> {
+                          drive.setDriveState(DriveState.OPEN_LOOP);
+                        })));
+    controller
+        .L1()
+        .whileTrue(getFrontIntakeGroupCommand())
+        .onFalse(
+            getIdleCommand()
+                .alongWith(
+                    new InstantCommand(
+                        () -> {
+                          drive.setDriveState(DriveState.OPEN_LOOP);
+                        })));
 
     controller
         .povUp()
@@ -174,6 +198,10 @@ public class RobotContainer {
     controller.L2().whileTrue(new FeedWhenReady(drive, shooter, feeder, pivot));
 
     controller.R2().whileTrue(getSpeakerShot()).onFalse(getIdleCommand());
+
+    controller.povDown().whileTrue(getUnstuckNoteCommand());
+
+    controller.povLeft().whileTrue(getIntakesOuttake());
   }
 
   /**
@@ -231,5 +259,47 @@ public class RobotContainer {
                 () -> {
                   Robot.setRobotState(RobotState.IDLE);
                 }));
+  }
+
+  public Command getIntakesOuttake() {
+    return new BothIntakeOpenLoop(intake, -4, -4)
+        .alongWith(new ShooterOpenLoop(shooter, 4))
+        .alongWith(new FeederOpenLoop(feeder, -3));
+  }
+
+  public Command getBackIntakeGroupCommand() {
+    return new BackIntakeCommandGroup(feeder, intake, shooter, pivot)
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.INTAKE_STATE);
+                }));
+  }
+
+  public Command getFrontIntakeGroupCommand() {
+    return new FrontIntakeCommandGroup(pivot, shooter, intake, feeder)
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.INTAKE_STATE);
+                }));
+  }
+
+  public Command getUnstuckNoteCommand() {
+    return new SetPivotAngle(pivot, 30, true)
+        .andThen(
+            new WaitForBackSensor(feeder)
+                .raceWith(
+                    Commands.parallel(
+                        new ShooterOpenLoop(shooter, -8),
+                        new FrontIntakeOpenLoop(intake, 4),
+                        new FeederOpenLoop(feeder, -1.5)))
+                .andThen(
+                    new WaitUntilCommand(feeder::getFrontSensor)
+                        .raceWith(
+                            Commands.parallel(
+                                new FeederOpenLoop(feeder, -1.5),
+                                new ShooterOpenLoop(shooter, -3))))
+                .andThen(new FeederOpenLoop(feeder, -2).withTimeout(0.08)));
   }
 }

@@ -93,6 +93,31 @@ public class TunerConstants {
   private static final SwerveDrivetrainConstants DrivetrainConstants =
       new SwerveDrivetrainConstants().withCANbusName(kCANbusName).withPigeon2Id(kPigeonId);
 
+  private static final TalonFXConfiguration initialDriveConfigs = new TalonFXConfiguration();
+
+  static {
+    initialDriveConfigs.CurrentLimits.StatorCurrentLimit = 110.0;
+    initialDriveConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+    initialDriveConfigs.CurrentLimits.SupplyCurrentLimit = 90;
+    initialDriveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+    initialDriveConfigs.Audio.BeepOnBoot = false;
+    initialDriveConfigs.Audio.BeepOnConfig = false;
+    initialDriveConfigs.ClosedLoopRamps.DutyCycleClosedLoopRampPeriod = 0.01;
+    initialDriveConfigs.ClosedLoopRamps.TorqueClosedLoopRampPeriod = 0.01;
+    initialDriveConfigs.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.01;
+  }
+
+  private static final TalonFXConfiguration initialSteerConfigs = new TalonFXConfiguration();
+
+  static {
+    initialSteerConfigs.Audio.BeepOnBoot = false;
+    initialSteerConfigs.Audio.BeepOnConfig = false;
+    initialSteerConfigs.CurrentLimits.StatorCurrentLimit = 50.0;
+    initialSteerConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
+    initialSteerConfigs.CurrentLimits.SupplyCurrentLimit = 60.0;
+    initialSteerConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;
+  }
+
   private static final SwerveModuleConstantsFactory ConstantCreator =
       new SwerveModuleConstantsFactory()
           .withDriveMotorGearRatio(kDriveGearRatio)
@@ -110,8 +135,8 @@ public class TunerConstants {
           .withDriveFrictionVoltage(kDriveFrictionVoltage)
           .withFeedbackSource(SteerFeedbackType.RemoteCANcoder)
           .withCouplingGearRatio(kCoupleRatio)
-          .withDriveMotorInitialConfigs(driveInitialConfigs)
-          .withSteerMotorInitialConfigs(steerInitialConfigs)
+          .withDriveMotorInitialConfigs(initialDriveConfigs)
+          .withSteerMotorInitialConfigs(initialSteerConfigs)
           .withCANcoderInitialConfigs(cancoderInitialConfigs);
 
   // Front Left

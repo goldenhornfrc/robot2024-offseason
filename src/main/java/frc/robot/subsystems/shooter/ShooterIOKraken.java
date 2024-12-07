@@ -63,10 +63,16 @@ public class ShooterIOKraken implements ShooterIO {
     config.Slot0.kV = 0.103;
     config.Slot0.kA = 0;
 
-    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.25;
-    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.25;
+    config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0;
+    config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.00;
 
-    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.08;
+    config.ClosedLoopRamps.VoltageClosedLoopRampPeriod = 0.0;
+
+    config.CurrentLimits.SupplyCurrentLimit = 55.0;
+    config.CurrentLimits.SupplyCurrentLimitEnable = true;
+
+    config.CurrentLimits.StatorCurrentLimit = 55.0;
+    config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyAndCheckConfiguration(talon, config);
   }
