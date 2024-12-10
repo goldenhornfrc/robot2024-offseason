@@ -43,14 +43,10 @@ public class ShooterIOKraken implements ShooterIO {
     config.MotorOutput.PeakReverseDutyCycle = -1.0;
     config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
 
-    config.CurrentLimits.SupplyCurrentLimit = 40;
-    config.CurrentLimits.SupplyCurrentLimitEnable = true;
-    config.CurrentLimits.StatorCurrentLimitEnable = false;
-
     config.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RotorSensor;
     config.Feedback.FeedbackRotorOffset = 0.0;
     config.Feedback.RotorToSensorRatio = 1.0;
-    config.Feedback.SensorToMechanismRatio = 16.0 / 21.0;
+    config.Feedback.SensorToMechanismRatio = 21.0 / 15.0;
 
     config.Audio.BeepOnBoot = true;
     config.Audio.BeepOnConfig = true;

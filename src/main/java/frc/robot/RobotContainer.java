@@ -56,6 +56,8 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 import frc.robot.subsystems.shooterPivot.ShooterPivotIO;
 import frc.robot.subsystems.shooterPivot.ShooterPivotIOFalcon;
 import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
+import frc.robot.subsystems.vision.VisionIOHardware;
+import frc.robot.subsystems.vision.VisionSubsystem;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -83,6 +85,7 @@ public class RobotContainer {
   public static ShooterPivotSubsystem pivot;
   public static FeederSubsystem feeder;
   public static DriveSubsystem drive;
+  public static VisionSubsystem vision;
   // Dashboard inputs
   private final LoggedDashboardNumber flywheelSpeedInput =
       new LoggedDashboardNumber("Flywheel Speed", 3000.0);
@@ -100,7 +103,7 @@ public class RobotContainer {
                 new DriveIOFalcon(
                     DriveConstants.kDriveTrain.getDriveTrainConstants(),
                     DriveConstants.kDriveTrain.getModuleConstants()));
-
+        vision = new VisionSubsystem(new VisionIOHardware());
         // Real robot, instantiate hardware IO implementations
 
         break;
@@ -116,7 +119,7 @@ public class RobotContainer {
                     DriveConstants.kDriveTrain.getDriveTrainConstants(),
                     DriveConstants.kDriveTrain.getModuleConstants()));
         // Sim robot, instantiate physics sim IO implementations
-
+        vision = new VisionSubsystem(new VisionIOHardware());
         break;
 
       default:
@@ -126,7 +129,7 @@ public class RobotContainer {
         feeder = new FeederSubsystem(new FeederIO() {});
         drive = new DriveSubsystem(new DriveIO() {});
         // Replayed robot, disable IO implementations
-
+        vision = new VisionSubsystem(new VisionIOHardware());
         break;
     }
 
@@ -202,6 +205,8 @@ public class RobotContainer {
     controller.povDown().whileTrue(getUnstuckNoteCommand());
 
     controller.povLeft().whileTrue(getIntakesOuttake());
+
+    controller.povRight().whileTrue(new SetPivotAngle(pivot, 120, true));
   }
 
   /**

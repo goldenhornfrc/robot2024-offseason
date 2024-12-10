@@ -76,10 +76,7 @@ public class DriveCommand extends Command {
     double strafeFieldFrame = Robot.getAlliance() == Alliance.Red ? strafe : -strafe;
 
     if (currentState == DriveState.OPEN_LOOP) {
-      if (Math.abs(turnFieldFrame) > Constants.DriveConstants.kSteerJoystickDeadband
-          || (Util.epsilonEquals(mJoystickLastTouched, Timer.getFPGATimestamp(), 0.25)
-              && Math.abs(mDrivetrain.getChassisSpeeds().omegaRadiansPerSecond)
-                  > Math.toRadians(10))) {
+      if (Math.abs(turnFieldFrame) >= 0.1) {
         turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
         mDrivetrain.setControl(
             driveNoHeading

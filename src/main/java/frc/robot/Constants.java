@@ -106,9 +106,59 @@ public final class Constants {
     {0.0, 60.0}
   };
 
+  public static double[][] kTYDistValuesRed = {
+    {19.27, 109.0},
+    {17.4, 116.0},
+    {15.58, 123.8},
+    {13.55, 131.7},
+    {11.48, 141.3},
+    {9.72, 149.3},
+    {8.45, 157.3},
+    {7.23, 164.3},
+    {6.24, 169.3},
+    {5.1, 177.3},
+    {3.84, 184.3},
+    {2.65, 194.3},
+    {1.8, 201.3},
+    {0.82, 209.3},
+    {-0.25, 217.3},
+    {-0.78, 224.3},
+    {-1.65, 231.3},
+    {-2.53, 239.3},
+    {-3.24, 246.3},
+    {-3.6, 251.3},
+    {-4.63, 266.3},
+    {-5.39, 271.3},
+    {-6.16, 283.3},
+    {-6.83, 293.3},
+    {-7.4, 301.3},
+    {-7.98, 309.3},
+    {-8.6, 319.3},
+    {-9.05, 329.3},
+    {-9.6, 339.3},
+    {-10.14, 349.3},
+    {-10.52, 359.3},
+    {-11.1, 369.3},
+    {-11.62, 379.3},
+    {-11.9, 389.3},
+    {-12.29, 399.3},
+    {-12.77, 409.3},
+    {-13.11, 419.3},
+    {-13.58, 429.3},
+    {-14.04, 439.3},
+    {-14.39, 449.3},
+    {-14.57, 459.3},
+    {-14.89, 469.3},
+    {-15.16, 479.3},
+    {-15.34, 489.3}
+  };
+
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kPivotMap =
       new InterpolatingTreeMap<>();
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kRPMMap =
+      new InterpolatingTreeMap<>();
+
+  public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kDistanceMap =
       new InterpolatingTreeMap<>();
 
   static {
@@ -118,6 +168,10 @@ public final class Constants {
 
     for (double[] pair : kPivotValues) {
       kPivotMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
+    }
+
+    for (double[] pair : kTYDistValuesRed) {
+      kDistanceMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
     }
   }
 

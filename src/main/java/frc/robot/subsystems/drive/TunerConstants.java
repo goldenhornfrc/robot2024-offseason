@@ -47,7 +47,7 @@ public class TunerConstants {
 
   // The stator current at which the wheels start to slip;
   // This needs to be tuned to your individual robot
-  private static final double kSlipCurrentA = 80.0;
+  private static final double kSlipCurrentA = 60.0;
 
   // Initial configs for the drive and steer motors and the CANcoder; these cannot be null.
   // Some configs will be overwritten; check the `with*InitialConfigs()` API documentation.
@@ -96,7 +96,7 @@ public class TunerConstants {
   private static final TalonFXConfiguration initialDriveConfigs = new TalonFXConfiguration();
 
   static {
-    initialDriveConfigs.CurrentLimits.StatorCurrentLimit = 110.0;
+    initialDriveConfigs.CurrentLimits.StatorCurrentLimit = 60.0;
     initialDriveConfigs.CurrentLimits.StatorCurrentLimitEnable = true;
     initialDriveConfigs.CurrentLimits.SupplyCurrentLimit = 90;
     initialDriveConfigs.CurrentLimits.SupplyCurrentLimitEnable = true;

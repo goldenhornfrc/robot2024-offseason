@@ -32,9 +32,9 @@ public class AmpStep2Command extends SequentialCommandGroup {
     .raceWith(new WaitCommand(0.8).andThen(new FeederOpenLoop(mFeeder, 5))) */
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-        new SetPivotAngle(mPivot, 119, true).raceWith(new ShooterOpenLoop(mShooter, 4)),
-        new ShooterOpenLoop(mShooter, 3)
-            .withTimeout(0.8)
+        new SetPivotAngle(mPivot, 120, true).raceWith(new ShooterOpenLoop(mShooter, 2.8)),
+        new ShooterOpenLoop(mShooter, 2.8)
+            .withTimeout(1.5)
             .raceWith(new WaitCommand(0.3).andThen(new FeederOpenLoop(mFeeder, 5))));
   }
 }

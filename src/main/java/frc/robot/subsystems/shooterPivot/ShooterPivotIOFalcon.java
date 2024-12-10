@@ -67,8 +67,8 @@ public class ShooterPivotIOFalcon implements ShooterPivotIO {
     config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.05;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.05;
 
-    config.MotionMagic.MotionMagicCruiseVelocity = 2.0;
-    config.MotionMagic.MotionMagicAcceleration = 2.0;
+    config.MotionMagic.MotionMagicCruiseVelocity = 1.6;
+    config.MotionMagic.MotionMagicAcceleration = 1.6;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;

@@ -34,19 +34,20 @@ public class BackIntakeCommandGroup extends SequentialCommandGroup {
                 new WaitForBackSensor(mFeeder)
                     .raceWith(
                         Commands.parallel(
-                            new BackIntakeOpenLoop(mBackIntake, 5),
+                            new BackIntakeOpenLoop(mBackIntake, 6.5),
                             new FeederOpenLoop(mFeeder, 5)))),
-        Commands.parallel(new FeederOpenLoop(mFeeder, 5), new BackIntakeOpenLoop(mBackIntake, 5))
+        Commands.parallel(new FeederOpenLoop(mFeeder, 5), new BackIntakeOpenLoop(mBackIntake, 6.5))
             .withTimeout(0.1),
         new WaitForFrontSensor(mFeeder)
             .raceWith(
                 Commands.parallel(
-                    new FeederOpenLoop(mFeeder, 2), new BackIntakeOpenLoop(mBackIntake, 4))),
+                    new FeederOpenLoop(mFeeder, 2), new BackIntakeOpenLoop(mBackIntake, 6.5))),
         new FeederOpenLoop(mFeeder, -0.5).withTimeout(0.1));
 
     /*new WaitForFrontSensor(mFeeder)
             .raceWith(
                 new FeederOpenLoop(mFeeder, 4), new BackIntakeOpenLoop(mBackIntake, 5)))
     .andThen(new FeederOpenLoop(mFeeder, -1.0).withTimeout(0.25)*/
+    
   }
 }
