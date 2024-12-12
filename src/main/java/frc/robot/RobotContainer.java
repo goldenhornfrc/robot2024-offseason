@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
 import frc.robot.Constants.DriveConstants;
@@ -33,7 +34,9 @@ import frc.robot.commands.CloseLoop.backIntake.BackIntakeCommandGroup;
 import frc.robot.commands.CloseLoop.drive.DriveCommand;
 import frc.robot.commands.CloseLoop.feeder.FeedWhenReady;
 import frc.robot.commands.CloseLoop.frontIntake.FrontIntakeCommandGroup;
+import frc.robot.commands.CloseLoop.object.ObjectDetection;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
+import frc.robot.commands.CloseLoop.pivot.SetPivotAngleDist;
 import frc.robot.commands.CloseLoop.sensors.WaitForBackSensor;
 import frc.robot.commands.CloseLoop.shooter.SetShooterRPM;
 import frc.robot.commands.OpenLoop.BothIntakeOpenLoop;
@@ -66,7 +69,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -86,9 +88,6 @@ public class RobotContainer {
   public static FeederSubsystem feeder;
   public static DriveSubsystem drive;
   public static VisionSubsystem vision;
-  // Dashboard inputs
-  private final LoggedDashboardNumber flywheelSpeedInput =
-      new LoggedDashboardNumber("Flywheel Speed", 3000.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -151,9 +150,8 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
             () -> MathUtil.applyDeadband(-controller.getRightX(), 0.05)));
 
-    controller.cross().onTrue(new SetPivotAngle(pivot, 60, true));
-    controller.triangle().onTrue(new SetPivotAngle(pivot, 0, false));
-    controller.circle().whileTrue(new FeederOpenLoop(feeder, 4));
+    controller.circle().whileTrue(new ObjectDetection(drive, vision));
+    controller.triangle().whileTrue(new InstantCommand(() -> pivot.resetEncoder()));
 
     controller
         .square()
@@ -191,22 +189,35 @@ public class RobotContainer {
                         })));
 
     controller
-        .povUp()
+        .cross()
         .onTrue(
             new ConditionalCommand(
                 new AmpStep2Command(feeder, shooter, drive, pivot).andThen(getIdleCommand()),
                 new AmpStep1Command(drive, pivot, feeder),
                 feeder::getButtonPress));
 
-    controller.L2().whileTrue(new FeedWhenReady(drive, shooter, feeder, pivot));
-
-    controller.R2().whileTrue(getSpeakerShot()).onFalse(getIdleCommand());
+    controller
+        .R2()
+        .whileTrue(
+            getSpeakerShot()
+                .alongWith(
+                    new WaitCommand(0.3)
+                        .andThen(
+                            Commands.waitUntil(
+                                    () ->
+                                        Constants.kShootingParams.isShooterPivotAtSetpoint(
+                                            pivot.getShooterPivotAngle(), pivot.getTargetAngle()))
+                                .andThen(
+                                    new FeederOpenLoop(feeder, -3)
+                                        .withTimeout(0.05)
+                                        .andThen(
+                                            new FeedWhenReady(drive, shooter, feeder, pivot))))))
+        .onFalse(getIdleCommand());
 
     controller.povDown().whileTrue(getUnstuckNoteCommand());
 
-    controller.povLeft().whileTrue(getIntakesOuttake());
-
-    controller.povRight().whileTrue(new SetPivotAngle(pivot, 120, true));
+    controller.povLeft().onTrue(new InstantCommand(() -> pivot.testSum(1.0)));
+    controller.povRight().onTrue(new InstantCommand(() -> pivot.testSum(-1.0)));
   }
 
   /**
@@ -248,8 +259,8 @@ public class RobotContainer {
   }
 
   public Command getSpeakerShot() {
-    return new SetPivotAngle(pivot, 40, true)
-        .alongWith(new SetShooterRPM(shooter, 3500, 3500))
+    return new SetPivotAngleDist(pivot, vision, true)
+        .alongWith(new SetShooterRPM(shooter, 3300, 3300))
         .alongWith(
             new InstantCommand(
                 () -> {

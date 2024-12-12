@@ -7,8 +7,6 @@ package frc.robot.commands.CloseLoop.backIntake;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
-import frc.robot.commands.CloseLoop.sensors.WaitForBackSensor;
-import frc.robot.commands.CloseLoop.sensors.WaitForFrontSensor;
 import frc.robot.commands.OpenLoop.BackIntakeOpenLoop;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
 import frc.robot.subsystems.feeder.FeederSubsystem;
@@ -29,25 +27,16 @@ public class BackIntakeCommandGroup extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand();
     addCommands(
-        new SetPivotAngle(mPivot, 30, true)
-            .andThen(
-                new WaitForBackSensor(mFeeder)
-                    .raceWith(
-                        Commands.parallel(
-                            new BackIntakeOpenLoop(mBackIntake, 6.5),
-                            new FeederOpenLoop(mFeeder, 5)))),
-        Commands.parallel(new FeederOpenLoop(mFeeder, 5), new BackIntakeOpenLoop(mBackIntake, 6.5))
-            .withTimeout(0.1),
-        new WaitForFrontSensor(mFeeder)
-            .raceWith(
-                Commands.parallel(
-                    new FeederOpenLoop(mFeeder, 2), new BackIntakeOpenLoop(mBackIntake, 6.5))),
-        new FeederOpenLoop(mFeeder, -0.5).withTimeout(0.1));
+        new SetPivotAngle(mPivot, 30, true),
+        Commands.race(
+            Commands.waitUntil(mFeeder::getFrontSensor),
+            new BackIntakeOpenLoop(mBackIntake, 6.5),
+            new FeederOpenLoop(mFeeder, 3.5)));
 
     /*new WaitForFrontSensor(mFeeder)
             .raceWith(
                 new FeederOpenLoop(mFeeder, 4), new BackIntakeOpenLoop(mBackIntake, 5)))
     .andThen(new FeederOpenLoop(mFeeder, -1.0).withTimeout(0.25)*/
-    
+
   }
 }

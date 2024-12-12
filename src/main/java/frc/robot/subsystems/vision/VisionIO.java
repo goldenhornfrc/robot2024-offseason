@@ -4,17 +4,14 @@
 
 package frc.robot.subsystems.vision;
 
-import frc.robot.subsystems.vision.VisionSubsystem.VisionResult;
-
 /** Add your docs here. */
 public interface VisionIO {
 
   public static class VisionIOInputs {
     public VisionResult targetResult = new VisionResult(0, 0, false);
     public VisionResult objectResult = new VisionResult(0, 0, false);
+    public double targetDistance = 0.0;
   }
 
-  public default VisionIOInputs updateInputs(VisionIOInputs inputs) {
-    return inputs;
-  }
+  public default void updateInputs(VisionIOInputs inputs) {}
 }

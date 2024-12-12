@@ -5,30 +5,32 @@
 package frc.robot.commands.CloseLoop.pivot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
+import frc.robot.lib.InterpolatingDouble;
 import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
-public class SetPivotAngle extends Command {
+public class SetPivotAngleDist extends Command {
   private final ShooterPivotSubsystem shooterPivot;
-  private final double targetAngle;
+  private final VisionSubsystem vision;
   private final boolean shouldHold;
-  private boolean slot1 = false;
 
   /** Creates a new SetPivotAngle. */
-  public SetPivotAngle(ShooterPivotSubsystem shooterPivot, double targetAngle, boolean shouldHold) {
+  public SetPivotAngleDist(
+      ShooterPivotSubsystem shooterPivot, VisionSubsystem vision, boolean shouldHold) {
     this.shooterPivot = shooterPivot;
-    this.targetAngle = targetAngle;
+    this.vision = vision;
     this.shouldHold = shouldHold;
-    this.slot1 = false;
+
     addRequirements(shooterPivot);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
-  public SetPivotAngle(
-      ShooterPivotSubsystem shooterPivot, double targetAngle, boolean shouldHold, boolean slot1) {
+  public SetPivotAngleDist(ShooterPivotSubsystem shooterPivot, VisionSubsystem vision) {
     this.shooterPivot = shooterPivot;
-    this.targetAngle = targetAngle;
-    this.shouldHold = shouldHold;
-    this.slot1 = slot1;
+    this.vision = vision;
+    this.shouldHold = true;
+
     addRequirements(shooterPivot);
     // Use addRequirements() here to declare subsystem dependencies.
   }
@@ -40,19 +42,18 @@ public class SetPivotAngle extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 5) {
-      if (!slot1) {
-        shooterPivot.setPositionVoltageAngle(targetAngle);
-      } else {
-        shooterPivot.setPositionVoltageAngleSlot1(targetAngle);
-      }
-    } else {
-      if (!slot1) {
 
-        shooterPivot.setMotionMagicAngle(targetAngle);
-      } else {
-        shooterPivot.setMotionMagicAngleSlot1(targetAngle);
-      }
+    double distance = vision.getDistanceToTarget();
+    double targetAngle =
+        Constants.kPivotMap.getInterpolated(new InterpolatingDouble(Double.valueOf(distance)))
+            .value;
+
+    System.out.println(targetAngle);
+
+    if (Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 5) {
+      shooterPivot.setPositionVoltageAngle(targetAngle);
+    } else {
+      shooterPivot.setMotionMagicAngle(targetAngle);
     }
   }
 
@@ -67,6 +68,6 @@ public class SetPivotAngle extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    return Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 1.5;
+    return false;
   }
 }

@@ -27,7 +27,7 @@ public class AmpStep1Command extends SequentialCommandGroup {
                 () -> {
                   Robot.setRobotState(RobotState.AMP);
                 })
-            .andThen(new SetPivotAngle(mPivot, 60, true))
+            .andThen(new SetPivotAngle(mPivot, 60, true, true))
             .andThen(
                 new InstantCommand(
                     () -> {

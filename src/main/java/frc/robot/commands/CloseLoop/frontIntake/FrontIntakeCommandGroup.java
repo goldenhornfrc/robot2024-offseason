@@ -7,9 +7,7 @@ package frc.robot.commands.CloseLoop.frontIntake;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
-import frc.robot.commands.CloseLoop.sensors.WaitForBackSensor;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
 import frc.robot.commands.OpenLoop.FrontIntakeOpenLoop;
 import frc.robot.commands.OpenLoop.ShooterOpenLoop;
@@ -31,19 +29,15 @@ public class FrontIntakeCommandGroup extends SequentialCommandGroup {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     addCommands(
-        new SetPivotAngle(mPivot, 0, false).raceWith(new ShooterOpenLoop(mShooter, -5.5)),
-        new WaitCommand(0.5).raceWith(new ShooterOpenLoop(mShooter, -5)),
-        new WaitForBackSensor(mFeeder)
-            .raceWith(
-                Commands.parallel(
-                    new ShooterOpenLoop(mShooter, -5.5),
-                    new FrontIntakeOpenLoop(mFrontIntake, 5),
-                    new FeederOpenLoop(mFeeder, -1.5)))
-            .andThen(
-                new WaitUntilCommand(mFeeder::getFrontSensor)
-                    .raceWith(
-                        Commands.parallel(
-                            new FeederOpenLoop(mFeeder, -0.75), new ShooterOpenLoop(mShooter, -3))))
-            .andThen(new FeederOpenLoop(mFeeder, -1.0).withTimeout(0.08)));
+        new SetPivotAngle(mPivot, 0, false, true).raceWith(new ShooterOpenLoop(mShooter, -5.5)),
+        new WaitCommand(0.5).raceWith(new ShooterOpenLoop(mShooter, -5.5)),
+        Commands.race(
+            Commands.waitUntil(mFeeder::getBackSensor),
+            new FrontIntakeOpenLoop(mFrontIntake, 5.0),
+            new ShooterOpenLoop(mShooter, -5.5)),
+        Commands.race(
+            Commands.waitUntil(mFeeder::getFrontSensor),
+            new ShooterOpenLoop(mShooter, -5.5),
+            new FeederOpenLoop(mFeeder, -2.0)));
   }
 }

@@ -38,7 +38,7 @@ public final class Constants {
   }
 
   public static class ShooterPivotConstants {
-    public static final double kGearRatio = 1 / 144;
+    public static final double kGearRatio = 1.0 / 144.0;
     public static final double kS = 0.0;
     public static final double kA = 0.0;
     public static final double kV = 0.0;
@@ -87,23 +87,24 @@ public final class Constants {
     REPLAY
   }
 
-  public static double[][] kRPMValues = {
-    {7.41, 6500.0},
-    {5.31, 4000.0},
-    {4.81, 4000.0},
-    {4.31, 4000.0},
-    {3.81, 4000.0},
-    {3.31, 4000.0},
-    {2.81, 4000.0},
-    {2.31, 4000.0},
-    {1.81, 4000.0},
-    {1.31, 4000.0},
-    {0.0, 0.0}
-  };
-
   public static double[][] kPivotValues = {
-    {1.31, 60.0},
-    {0.0, 60.0}
+    {109.0, 60.0},
+    {135.0, 58.0},
+    {160.0, 56.0},
+    {185.0, 53.0},
+    {210.0, 50.0},
+    {237.0, 48.0},
+    {260.0, 46.0},
+    {284.0, 44.0},
+    {310.0, 43.0},
+    {335.0, 42.0},
+    {360.0, 41.0},
+    {385.0, 41.0},
+    {410.0, 40.0},
+    {435.0, 39.0},
+    {460.0, 39.0},
+    {472.0, 39.0},
+    {500.0, 39.0}
   };
 
   public static double[][] kTYDistValuesRed = {
@@ -155,17 +156,11 @@ public final class Constants {
 
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kPivotMap =
       new InterpolatingTreeMap<>();
-  public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kRPMMap =
-      new InterpolatingTreeMap<>();
 
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kDistanceMap =
       new InterpolatingTreeMap<>();
 
   static {
-    for (double[] pair : kRPMValues) {
-      kRPMMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
-    }
-
     for (double[] pair : kPivotValues) {
       kPivotMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
     }
@@ -178,8 +173,7 @@ public final class Constants {
   public static final ShootingParameters kShootingParams =
       new ShootingParameters(
           kPivotMap,
-          kRPMMap, // rpm map
-          60.0, // shooter allowable error (rpm)
-          1.0 // pivot allowable error (°)
+          80.0, // shooter allowable error (rpm)
+          0.35 // pivot allowable error (°)
           );
 }

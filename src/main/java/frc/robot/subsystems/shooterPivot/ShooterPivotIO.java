@@ -17,7 +17,11 @@ public interface ShooterPivotIO {
 
   public default void setMotionMagicAngle(double targetAngle) {}
 
+  public default void setMotionMagicAngleSlot1(double targetAngle) {}
+
   public default void setPositionVoltageAngle(double angle) {}
+
+  public default void setPositionVoltageAngleSlot1(double angle) {}
 
   public default double getShooterPivotAngle() {
     return 0;
@@ -26,6 +30,8 @@ public interface ShooterPivotIO {
   public default double getTargetAngle() {
     return 0;
   }
+
+  public default void resetEncoder() {}
 
   public default void updateInputs(ShooterPivotIOInputs inputs) {}
 }

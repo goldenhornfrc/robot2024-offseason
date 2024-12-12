@@ -137,6 +137,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void teleopInit() {
     RobotContainer.drive.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

@@ -6,8 +6,6 @@ package frc.robot.subsystems.vision;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.lib.InterpolatingDouble;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -18,6 +16,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   private VisionResult targetResult;
   private VisionResult objectResult;
+  private double distanceToTarget;
 
   public VisionSubsystem(VisionIO io) {
     this.io = io;
@@ -26,16 +25,15 @@ public class VisionSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    var in = io.updateInputs(inputs);
-    targetResult = in.targetResult;
-    objectResult = in.objectResult;
+    io.updateInputs(inputs);
+    targetResult = inputs.targetResult;
+    objectResult = inputs.objectResult;
 
     VisionResult targetInfo = getTargetInfo();
     if (targetInfo.targetValid) {
-      SmartDashboard.putNumber(
-          "Distance to speaker",
-          Constants.kDistanceMap.getInterpolated(new InterpolatingDouble(targetInfo.targetTy))
-              .value);
+      distanceToTarget = inputs.targetDistance;
+
+      SmartDashboard.putNumber("Distance to speaker", distanceToTarget);
 
       SmartDashboard.putNumber("TY from LL", targetInfo.targetTy);
     }
@@ -49,15 +47,7 @@ public class VisionSubsystem extends SubsystemBase {
     return objectResult;
   }
 
-  public static class VisionResult {
-    public double targetTx = 0;
-    public double targetTy = 0;
-    public boolean targetValid = false;
-
-    public VisionResult(double tx, double ty, boolean valid) {
-      targetTx = tx;
-      targetTy = ty;
-      targetValid = valid;
-    }
+  public double getDistanceToTarget() {
+    return distanceToTarget;
   }
 }

@@ -7,11 +7,9 @@ package frc.robot.commands.CloseLoop.drive;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.lib.Util;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem.DriveState;
 import frc.robot.util.swerve.SwerveModule;
@@ -115,13 +113,10 @@ public class DriveCommand extends Command {
 
     if (currentState == DriveState.INTAKE_STATE) {
 
-      var xVel = MathUtil.clamp(throttleFieldFrame, -0.4, 0.4);
-      var yVel = MathUtil.clamp(strafeFieldFrame, -0.4, 0.4);
+      var xVel = MathUtil.clamp(throttleFieldFrame, -0.65, 0.65);
+      var yVel = MathUtil.clamp(strafeFieldFrame, -0.65, 0.65);
 
-      if (Math.abs(turnFieldFrame) > Constants.DriveConstants.kSteerJoystickDeadband
-          || (Util.epsilonEquals(mJoystickLastTouched, Timer.getFPGATimestamp(), 0.25)
-              && Math.abs(mDrivetrain.getChassisSpeeds().omegaRadiansPerSecond)
-                  > Math.toRadians(10))) {
+      if (Math.abs(turnFieldFrame) >= 0.1) {
         turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
         mDrivetrain.setControl(
             driveNoHeading
@@ -148,7 +143,9 @@ public class DriveCommand extends Command {
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    mHeadingSetpoint = Optional.empty();
+  }
 
   // Returns true when the command should end.
   @Override
