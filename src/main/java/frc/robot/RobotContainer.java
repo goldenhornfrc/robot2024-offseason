@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
@@ -203,6 +204,7 @@ public class RobotContainer {
     controller
         .R2()
         .whileTrue(
+          new RepeatCommand(
             new ConditionalCommand(
                 getSpeakerShot()
                     .alongWith(
@@ -219,8 +221,13 @@ public class RobotContainer {
                                             .andThen(
                                                 new FeedWhenReady(
                                                     drive, shooter, feeder, pivot))))),
-                new InstantCommand(),
-                () -> vision.getTargetInfo().targetValid))
+                new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.HEADING_LOCK);
+                  drive.setTargetHeading(
+                      180.0); // TODO: Set to proper angles for each alliance. 0deg, 180deg
+                }),
+                () -> vision.getTargetInfo().targetValid)))
         .onFalse(
             getIdleCommand()
                 .alongWith(new InstantCommand(() -> drive.setDriveState(DriveState.OPEN_LOOP))));
