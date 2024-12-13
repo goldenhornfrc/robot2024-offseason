@@ -223,9 +223,11 @@ public class RobotContainer {
                                                     drive, shooter, feeder, pivot))))),
                 new InstantCommand(
                 () -> {
-                  drive.setDriveState(DriveState.HEADING_LOCK);
-                  drive.setTargetHeading(
-                      180.0); // TODO: Set to proper angles for each alliance. 0deg, 180deg
+                  if(drive.getDriveState() != DriveState.VISION_STATE){
+                    drive.setDriveState(DriveState.HEADING_LOCK);
+                    drive.setTargetHeading(
+                        180.0); // TODO: Set to proper angles for each alliance. 0deg, 180deg
+                  }
                 }),
                 () -> vision.getTargetInfo().targetValid)))
         .onFalse(
