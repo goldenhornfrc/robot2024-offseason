@@ -126,8 +126,8 @@ public class DriveCommand extends Command {
 
     if (currentState == DriveState.INTAKE_STATE) {
 
-      var xVel = MathUtil.clamp(throttleFieldFrame, -0.65, 0.65);
-      var yVel = MathUtil.clamp(strafeFieldFrame, -0.65, 0.65);
+      var xVel = MathUtil.clamp(throttleFieldFrame, -1.0, 1.0);
+      var yVel = MathUtil.clamp(strafeFieldFrame, -1.0, 1.0);
 
       if (Math.abs(turnFieldFrame) >= 0.1) {
         turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;

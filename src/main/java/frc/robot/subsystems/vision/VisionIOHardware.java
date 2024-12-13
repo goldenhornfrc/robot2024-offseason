@@ -31,12 +31,16 @@ public class VisionIOHardware implements VisionIO {
   }
 
   @Override
-  public void blinkIntakeLimelight() {
+  public void blinkTagLimelight() {
     LimelightHelpers.setLEDMode_ForceBlink(tagLLName);
   }
 
   @Override
-  public void stopBlinkingIntakeLimelight() {
-    LimelightHelpers.setLEDMode_ForceOn(tagLLName);
+  public void setTagLimelightLED(boolean state) {
+    if (state) {
+      LimelightHelpers.setLEDMode_ForceOn(tagLLName);
+    } else {
+      LimelightHelpers.setLEDMode_ForceOff(tagLLName);
+    }
   }
 }

@@ -26,7 +26,6 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot.RobotState;
 import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
@@ -180,14 +179,13 @@ public class RobotContainer {
                         })));
     controller
         .L1()
-        .whileTrue(getFrontIntakeGroupCommand())
+        .whileTrue(getFrontIntakeGroupCommand().andThen(new SetPivotAngle(pivot, 15.0, true)))
         .onFalse(
-            getIdleCommand()
-                .alongWith(
-                    new InstantCommand(
-                        () -> {
-                          drive.setDriveState(DriveState.OPEN_LOOP);
-                        })));
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.OPEN_LOOP);
+                  Robot.setRobotState(RobotState.IDLE);
+                }));
 
     controller
         .cross()
@@ -236,11 +234,6 @@ public class RobotContainer {
                       drive.setDriveState(DriveState.OPEN_LOOP);
                     })
                 .alongWith(getIdleCommand()));
-
-    controller.povLeft().onTrue(new InstantCommand(() -> pivot.testSum(1.0)));
-    controller.povRight().onTrue(new InstantCommand(() -> pivot.testSum(-1.0)));
-
-    new Trigger(feeder::getFrontSensor).onTrue(vision.blinkIntakeLimelight());
   }
 
   /**
@@ -349,11 +342,12 @@ public class RobotContainer {
             new InstantCommand(
                 () -> {
                   drive.setDriveState(DriveState.HEADING_LOCK);
-                  drive.setTargetHeading(210);
+                  drive.setTargetHeading(
+                      210); // TODO: Set to proper angles for each alliance. 30deg, 150deg
                 }))
         .alongWith(new SetShooterRPM(shooter, 3000, 3000))
         .alongWith(
-            new WaitCommand(1.0)
+            new WaitCommand(0.85)
                 .andThen(new FeederOpenLoop(feeder, -3).withTimeout(0.05))
                 .andThen(new FeederOpenLoop(feeder, 7)));
   }

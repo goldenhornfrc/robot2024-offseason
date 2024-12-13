@@ -15,7 +15,7 @@ public interface VisionIO {
 
   public default void updateInputs(VisionIOInputs inputs) {}
 
-  public default void blinkIntakeLimelight() {}
+  public default void blinkTagLimelight() {}
 
-  public default void stopBlinkingIntakeLimelight() {}
+  public default void setTagLimelightLED(boolean state) {}
 }

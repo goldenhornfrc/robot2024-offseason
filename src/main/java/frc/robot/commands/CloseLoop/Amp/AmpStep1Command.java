@@ -28,7 +28,7 @@ public class AmpStep1Command extends SequentialCommandGroup {
                 () -> {
                   Robot.setRobotState(RobotState.AMP);
                   mDrive.setDriveState(DriveState.HEADING_LOCK);
-                  mDrive.setTargetHeading(90);
+                  mDrive.setTargetHeading(90); // TODO change this according to alliance
                 })
             .andThen(new SetPivotAngle(mPivot, 60, true, true))
             .andThen(

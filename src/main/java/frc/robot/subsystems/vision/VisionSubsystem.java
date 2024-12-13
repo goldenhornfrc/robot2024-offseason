@@ -54,9 +54,8 @@ public class VisionSubsystem extends SubsystemBase {
     return distanceToTarget;
   }
 
-  public Command blinkIntakeLimelight() {
-    return new InstantCommand(() -> io.blinkIntakeLimelight())
-        .andThen(
-            new WaitCommand(1).andThen(new InstantCommand(() -> io.stopBlinkingIntakeLimelight())));
+  public Command blinkTagLimelight() {
+    return new InstantCommand(() -> io.blinkTagLimelight())
+        .andThen(new WaitCommand(1).andThen(new InstantCommand(() -> io.setTagLimelightLED(true))));
   }
 }
