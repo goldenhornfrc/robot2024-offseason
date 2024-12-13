@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot.RobotState;
 import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
@@ -146,6 +147,7 @@ public class RobotContainer {
     drive.setDefaultCommand(
         new DriveCommand(
             drive,
+            vision,
             () -> MathUtil.applyDeadband(controller.getLeftY(), 0.05),
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
             () -> MathUtil.applyDeadband(-controller.getRightX(), 0.05)));
@@ -154,12 +156,11 @@ public class RobotContainer {
     controller.triangle().whileTrue(new InstantCommand(() -> pivot.resetEncoder()));
 
     controller
-        .square()
-        .onTrue(
+        .povUp()
+        .whileTrue(
             new InstantCommand(
                 () -> {
-                  drive.setTargetHeading(90);
-                  drive.setDriveState(DriveState.HEADING_LOCK);
+                  drive.setDriveState(DriveState.VISION_STATE);
                 }))
         .onFalse(
             new InstantCommand(
@@ -193,31 +194,53 @@ public class RobotContainer {
         .onTrue(
             new ConditionalCommand(
                 new AmpStep2Command(feeder, shooter, drive, pivot).andThen(getIdleCommand()),
-                new AmpStep1Command(drive, pivot, feeder),
+                new AmpStep1Command(drive, pivot, feeder)
+                    .andThen(
+                        new InstantCommand(
+                            () -> {
+                              drive.setDriveState(DriveState.OPEN_LOOP);
+                            })),
                 feeder::getButtonPress));
 
     controller
         .R2()
         .whileTrue(
-            getSpeakerShot()
-                .alongWith(
-                    new WaitCommand(0.3)
-                        .andThen(
-                            Commands.waitUntil(
-                                    () ->
-                                        Constants.kShootingParams.isShooterPivotAtSetpoint(
-                                            pivot.getShooterPivotAngle(), pivot.getTargetAngle()))
-                                .andThen(
-                                    new FeederOpenLoop(feeder, -3)
-                                        .withTimeout(0.05)
-                                        .andThen(
-                                            new FeedWhenReady(drive, shooter, feeder, pivot))))))
-        .onFalse(getIdleCommand());
+            new ConditionalCommand(
+                getSpeakerShot()
+                    .alongWith(
+                        new WaitCommand(0.3)
+                            .andThen(
+                                Commands.waitUntil(
+                                        () ->
+                                            Constants.kShootingParams.isShooterPivotAtSetpoint(
+                                                pivot.getShooterPivotAngle(),
+                                                pivot.getTargetAngle()))
+                                    .andThen(
+                                        new FeederOpenLoop(feeder, -3)
+                                            .withTimeout(0.05)
+                                            .andThen(
+                                                new FeedWhenReady(
+                                                    drive, shooter, feeder, pivot))))),
+                new InstantCommand(),
+                () -> vision.getTargetInfo().targetValid))
+        .onFalse(
+            getIdleCommand()
+                .alongWith(new InstantCommand(() -> drive.setDriveState(DriveState.OPEN_LOOP))));
 
-    controller.povDown().whileTrue(getUnstuckNoteCommand());
+    controller
+        .square()
+        .whileTrue(getFeedOverStageCommand())
+        .onFalse(
+            new InstantCommand(
+                    () -> {
+                      drive.setDriveState(DriveState.OPEN_LOOP);
+                    })
+                .alongWith(getIdleCommand()));
 
     controller.povLeft().onTrue(new InstantCommand(() -> pivot.testSum(1.0)));
     controller.povRight().onTrue(new InstantCommand(() -> pivot.testSum(-1.0)));
+
+    new Trigger(feeder::getFrontSensor).onTrue(vision.blinkIntakeLimelight());
   }
 
   /**
@@ -265,6 +288,7 @@ public class RobotContainer {
             new InstantCommand(
                 () -> {
                   Robot.setRobotState(RobotState.SPEAKER);
+                  drive.setDriveState(DriveState.VISION_STATE);
                 }));
   }
 
@@ -317,5 +341,20 @@ public class RobotContainer {
                                 new FeederOpenLoop(feeder, -1.5),
                                 new ShooterOpenLoop(shooter, -3))))
                 .andThen(new FeederOpenLoop(feeder, -2).withTimeout(0.08)));
+  }
+
+  public Command getFeedOverStageCommand() {
+    return new SetPivotAngle(pivot, 50.0, true)
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.HEADING_LOCK);
+                  drive.setTargetHeading(210);
+                }))
+        .alongWith(new SetShooterRPM(shooter, 3000, 3000))
+        .alongWith(
+            new WaitCommand(1.0)
+                .andThen(new FeederOpenLoop(feeder, -3).withTimeout(0.05))
+                .andThen(new FeederOpenLoop(feeder, 7)));
   }
 }

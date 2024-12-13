@@ -12,6 +12,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem.DriveState;
+import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.swerve.SwerveModule;
 import frc.robot.util.swerve.SwerveRequest;
 import java.util.Optional;
@@ -20,11 +21,10 @@ import org.littletonrobotics.junction.Logger;
 
 public class DriveCommand extends Command {
   private DriveSubsystem mDrivetrain;
+  private VisionSubsystem mVision;
   private DoubleSupplier mThrottleSupplier, mStrafeSupplier, mTurnSupplier;
   private Optional<Rotation2d> mHeadingSetpoint = Optional.empty();
   private Rotation2d targetHeading;
-
-  private double mJoystickLastTouched = -1;
 
   private SwerveRequest.FieldCentric driveNoHeading =
       new SwerveRequest.FieldCentric()
@@ -32,15 +32,22 @@ public class DriveCommand extends Command {
           .withRotationalDeadband(
               Constants.DriveConstants.kMaxAngularVel
                   * Constants.DriveConstants.kSteerJoystickDeadband)
-          .withDriveRequestType(SwerveModule.DriveRequestType.Velocity);
+          .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
+
   private SwerveRequest.FieldCentricFacingAngle driveWithHeading =
       new SwerveRequest.FieldCentricFacingAngle()
           .withDeadband(Constants.DriveConstants.kMaxVel * 0.05)
-          .withDriveRequestType(SwerveModule.DriveRequestType.Velocity);
+          .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
+
+  private SwerveRequest.FieldCentricFacingAngle visionAlignRequest =
+      new SwerveRequest.FieldCentricFacingAngle()
+          .withDeadband(Constants.DriveConstants.kMaxVel * 0.05)
+          .withDriveRequestType(SwerveModule.DriveRequestType.OpenLoopVoltage);
 
   /** Creates a new DriveCommand. */
   public DriveCommand(
       DriveSubsystem drivetrain,
+      VisionSubsystem vision,
       DoubleSupplier throttle,
       DoubleSupplier strafe,
       DoubleSupplier turn) {
@@ -48,6 +55,7 @@ public class DriveCommand extends Command {
     mThrottleSupplier = throttle;
     mStrafeSupplier = strafe;
     mTurnSupplier = turn;
+    mVision = vision;
 
     driveWithHeading.HeadingController.setPID(
         Constants.DriveConstants.kHeadingControllerP,
@@ -55,13 +63,18 @@ public class DriveCommand extends Command {
         Constants.DriveConstants.kHeadingControllerD);
     driveWithHeading.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
 
+    visionAlignRequest.HeadingController = mDrivetrain.getVisionController();
+    visionAlignRequest.HeadingController.enableContinuousInput(-Math.PI, Math.PI);
+
     addRequirements(drivetrain);
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    mHeadingSetpoint = Optional.empty();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
@@ -138,6 +151,21 @@ public class DriveCommand extends Command {
         Logger.recordOutput(
             "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
       }
+    }
+
+    if (currentState == DriveState.VISION_STATE) {
+      var info = mVision.getTargetInfo();
+      if (info.targetValid) {
+        mHeadingSetpoint =
+            Optional.of(
+                mDrivetrain.getPose().getRotation().minus(Rotation2d.fromDegrees(info.targetTx)));
+      }
+
+      mDrivetrain.setControl(
+          visionAlignRequest
+              .withVelocityX(throttleFieldFrame)
+              .withVelocityY(strafeFieldFrame)
+              .withTargetDirection(mHeadingSetpoint.get()));
     }
   }
 

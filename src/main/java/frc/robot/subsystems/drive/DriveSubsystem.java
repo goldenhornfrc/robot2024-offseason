@@ -36,10 +36,13 @@ public class DriveSubsystem extends SubsystemBase {
   private final SwerveRequest.ApplyChassisSpeeds autoRequest =
       new SwerveRequest.ApplyChassisSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
+  private final PhoenixPIDController visionController = new PhoenixPIDController(7.0, 0, 0.007);
+
   public enum DriveState {
     OPEN_LOOP,
     HEADING_LOCK,
-    INTAKE_STATE
+    INTAKE_STATE,
+    VISION_STATE
   }
 
   private DriveState driveState = DriveState.OPEN_LOOP;
@@ -119,6 +122,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void seedFieldRelative() {
     io.seedFieldRelative();
+  }
+
+  public PhoenixPIDController getVisionController() {
+    return visionController;
   }
 
   public void seedFieldRelative(Pose2d location) {

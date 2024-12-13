@@ -10,6 +10,7 @@ import frc.robot.Robot;
 import frc.robot.Robot.RobotState;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem.DriveState;
 import frc.robot.subsystems.feeder.FeederSubsystem;
 import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
 
@@ -26,6 +27,8 @@ public class AmpStep1Command extends SequentialCommandGroup {
         new InstantCommand(
                 () -> {
                   Robot.setRobotState(RobotState.AMP);
+                  mDrive.setDriveState(DriveState.HEADING_LOCK);
+                  mDrive.setTargetHeading(90);
                 })
             .andThen(new SetPivotAngle(mPivot, 60, true, true))
             .andThen(

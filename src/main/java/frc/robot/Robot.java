@@ -122,6 +122,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     autonomousCommand = robotContainer.getAutonomousCommand();
+    RobotContainer.drive.resetOdometry(new Pose2d(0, 0, new Rotation2d(0)));
+
+    RobotContainer.pivot.resetEncoder();
 
     // schedule the autonomous command (example)
     if (autonomousCommand != null) {

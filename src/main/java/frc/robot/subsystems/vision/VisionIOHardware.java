@@ -29,4 +29,14 @@ public class VisionIOHardware implements VisionIO {
         Constants.kDistanceMap.getInterpolated(new InterpolatingDouble(Double.valueOf(targetTy)))
             .value;
   }
+
+  @Override
+  public void blinkIntakeLimelight() {
+    LimelightHelpers.setLEDMode_ForceBlink(tagLLName);
+  }
+
+  @Override
+  public void stopBlinkingIntakeLimelight() {
+    LimelightHelpers.setLEDMode_ForceOn(tagLLName);
+  }
 }

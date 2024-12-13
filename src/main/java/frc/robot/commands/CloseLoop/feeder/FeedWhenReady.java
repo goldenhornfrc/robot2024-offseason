@@ -44,7 +44,8 @@ public class FeedWhenReady extends Command {
         && Constants.kShootingParams.isShooterAtSetpoint(
             mShooter.getRightMotorRPM(), mShooter.getRightTargetRPM())
         && Constants.kShootingParams.isShooterPivotAtSetpoint(
-            mPivot.getShooterPivotAngle(), mPivot.getTargetAngle())) {
+            mPivot.getShooterPivotAngle(), mPivot.getTargetAngle())
+        && mDrive.getVisionController().atSetpoint()) {
       mFeeder.setVoltage(7);
     }
   }
