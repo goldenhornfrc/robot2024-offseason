@@ -93,7 +93,7 @@ public class ShooterIOKraken implements ShooterIO {
     rightTargetRPM = rightRPM;
 
     leftMotor.setControl(new VelocityVoltage(leftRPM / 60.0).withSlot(0));
-    rightMotor.setControl(new VelocityVoltage(leftRPM / 60.0).withSlot(0));
+    rightMotor.setControl(new VelocityVoltage(rightRPM / 60.0).withSlot(0));
   }
 
   @Override

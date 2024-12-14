@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.vision.VisionIO.VisionIOInputs;
 
 public class VisionSubsystem extends SubsystemBase {
@@ -20,9 +21,12 @@ public class VisionSubsystem extends SubsystemBase {
   private VisionResult targetResult;
   private VisionResult objectResult;
   private double distanceToTarget;
+  private static final double limelightMountPitch = -25.0;
+  private static final double limelightMountHeight = 0.2913;
 
   public VisionSubsystem(VisionIO io) {
     this.io = io;
+    io.setTagLimelightLED(false);
   }
 
   @Override
@@ -54,8 +58,22 @@ public class VisionSubsystem extends SubsystemBase {
     return distanceToTarget;
   }
 
+  public double getDistanceToNote(double targetY) {
+    double goal_theta = Math.toRadians(limelightMountPitch) + Math.toRadians(targetY);
+    double height_diff = 0.025 - limelightMountHeight;
+
+    return height_diff / Math.tan(goal_theta);
+  }
+
   public Command blinkTagLimelight() {
     return new InstantCommand(() -> io.blinkTagLimelight())
-        .andThen(new WaitCommand(1).andThen(new InstantCommand(() -> io.setTagLimelightLED(true))));
+        .andThen(
+            new WaitCommand(1)
+                .andThen(
+                    new InstantCommand(
+                        () -> {
+                          io.setTagLimelightLED(false);
+                          RobotContainer.intake.setShouldBlink(false);
+                        })));
   }
 }

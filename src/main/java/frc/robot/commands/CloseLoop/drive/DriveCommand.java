@@ -24,7 +24,6 @@ public class DriveCommand extends Command {
   private VisionSubsystem mVision;
   private DoubleSupplier mThrottleSupplier, mStrafeSupplier, mTurnSupplier;
   private Optional<Rotation2d> mHeadingSetpoint = Optional.empty();
-  private Rotation2d targetHeading;
 
   private SwerveRequest.FieldCentric driveNoHeading =
       new SwerveRequest.FieldCentric()
@@ -86,86 +85,97 @@ public class DriveCommand extends Command {
     double throttleFieldFrame = Robot.getAlliance() == Alliance.Red ? throttle : -throttle;
     double strafeFieldFrame = Robot.getAlliance() == Alliance.Red ? strafe : -strafe;
 
-    if (currentState == DriveState.OPEN_LOOP) {
-      if (Math.abs(turnFieldFrame) >= 0.1) {
-        turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
-        mDrivetrain.setControl(
-            driveNoHeading
-                .withVelocityX(throttleFieldFrame)
-                .withVelocityY(strafeFieldFrame)
-                .withRotationalRate(turnFieldFrame));
-        mHeadingSetpoint = Optional.empty();
-        Logger.recordOutput("DriveMaintainHeading/Mode", "NoHeading");
-      } else {
-        if (mHeadingSetpoint.isEmpty()) {
-          mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
-        }
+    switch (currentState) {
+      case HEADING_LOCK:
+        mHeadingSetpoint = Optional.of(Rotation2d.fromDegrees(mDrivetrain.getTargetHeading()));
+
         mDrivetrain.setControl(
             driveWithHeading
                 .withVelocityX(throttleFieldFrame)
                 .withVelocityY(strafeFieldFrame)
                 .withTargetDirection(mHeadingSetpoint.get()));
-        Logger.recordOutput("DriveMaintainHeading/Mode", "Heading");
-        Logger.recordOutput(
-            "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
-      }
-    }
-    if (currentState == DriveState.HEADING_LOCK) {
-      mHeadingSetpoint = Optional.empty();
-      targetHeading = Rotation2d.fromDegrees(mDrivetrain.getTargetHeading());
 
-      mDrivetrain.setControl(
-          driveWithHeading
-              .withVelocityX(throttleFieldFrame)
-              .withVelocityY(strafeFieldFrame)
-              .withTargetDirection(targetHeading));
+        Logger.recordOutput("DriveCommand/Mode", "TargetHeading");
+        Logger.recordOutput("DriveCommand/targetHeading", mHeadingSetpoint.get());
+        break;
 
-      Logger.recordOutput("DriveCommand/Mode", "TargetHeading");
-      Logger.recordOutput("DriveCommand/targetHeading", targetHeading.getDegrees());
-    }
+      case INTAKE_STATE:
+        var xVel = MathUtil.clamp(throttleFieldFrame, -1.0, 1.0);
+        var yVel = MathUtil.clamp(strafeFieldFrame, -1.0, 1.0);
 
-    if (currentState == DriveState.INTAKE_STATE) {
-
-      var xVel = MathUtil.clamp(throttleFieldFrame, -1.0, 1.0);
-      var yVel = MathUtil.clamp(strafeFieldFrame, -1.0, 1.0);
-
-      if (Math.abs(turnFieldFrame) >= 0.1) {
-        turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
-        mDrivetrain.setControl(
-            driveNoHeading
-                .withVelocityX(xVel)
-                .withVelocityY(yVel)
-                .withRotationalRate(turnFieldFrame));
-        mHeadingSetpoint = Optional.empty();
-        Logger.recordOutput("DriveMaintainHeading/Mode", "NoHeading");
-      } else {
-        if (mHeadingSetpoint.isEmpty()) {
-          mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
+        if (Math.abs(turnFieldFrame) >= 0.1) {
+          turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
+          mDrivetrain.setControl(
+              driveNoHeading
+                  .withVelocityX(xVel)
+                  .withVelocityY(yVel)
+                  .withRotationalRate(turnFieldFrame));
+          mHeadingSetpoint = Optional.empty();
+          Logger.recordOutput("DriveMaintainHeading/Mode", "NoHeading");
+        } else {
+          if (mHeadingSetpoint.isEmpty()) {
+            mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
+          }
+          mDrivetrain.setControl(
+              driveWithHeading
+                  .withVelocityX(xVel)
+                  .withVelocityY(yVel)
+                  .withTargetDirection(mHeadingSetpoint.get()));
+          Logger.recordOutput("DriveMaintainHeading/Mode", "Heading");
+          Logger.recordOutput(
+              "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
         }
-        mDrivetrain.setControl(
-            driveWithHeading
-                .withVelocityX(xVel)
-                .withVelocityY(yVel)
-                .withTargetDirection(mHeadingSetpoint.get()));
-        Logger.recordOutput("DriveMaintainHeading/Mode", "Heading");
-        Logger.recordOutput(
-            "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
-      }
-    }
+        break;
 
-    if (currentState == DriveState.VISION_STATE) {
-      var info = mVision.getTargetInfo();
-      if (info.targetValid) {
-        mHeadingSetpoint =
-            Optional.of(
-                mDrivetrain.getPose().getRotation().minus(Rotation2d.fromDegrees(info.targetTx)));
-      }
+      case VISION_STATE:
+        var info = mVision.getTargetInfo();
+        if (info.targetValid) {
+          mHeadingSetpoint =
+              Optional.of(
+                  mDrivetrain.getPose().getRotation().minus(Rotation2d.fromDegrees(info.targetTx)));
+        }
 
-      mDrivetrain.setControl(
-          visionAlignRequest
-              .withVelocityX(throttleFieldFrame)
-              .withVelocityY(strafeFieldFrame)
-              .withTargetDirection(mHeadingSetpoint.get()));
+        if (!mHeadingSetpoint.isPresent() || mHeadingSetpoint.isEmpty()) {
+          mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
+          mDrivetrain.setControl(
+              visionAlignRequest
+                  .withVelocityX(throttleFieldFrame)
+                  .withVelocityY(strafeFieldFrame)
+                  .withTargetDirection(mHeadingSetpoint.get()));
+        } else {
+          mDrivetrain.setControl(
+              visionAlignRequest
+                  .withVelocityX(throttleFieldFrame)
+                  .withVelocityY(strafeFieldFrame)
+                  .withTargetDirection(mHeadingSetpoint.get()));
+        }
+        break;
+
+      case OPEN_LOOP:
+      default:
+        if (Math.abs(turnFieldFrame) >= 0.1) {
+          turnFieldFrame = turnFieldFrame * Constants.DriveConstants.kMaxAngularVel;
+          mDrivetrain.setControl(
+              driveNoHeading
+                  .withVelocityX(throttleFieldFrame)
+                  .withVelocityY(strafeFieldFrame)
+                  .withRotationalRate(turnFieldFrame));
+          mHeadingSetpoint = Optional.empty();
+          Logger.recordOutput("DriveMaintainHeading/Mode", "NoHeading");
+        } else {
+          if (mHeadingSetpoint.isEmpty()) {
+            mHeadingSetpoint = Optional.of(mDrivetrain.getPose().getRotation());
+          }
+          mDrivetrain.setControl(
+              driveWithHeading
+                  .withVelocityX(throttleFieldFrame)
+                  .withVelocityY(strafeFieldFrame)
+                  .withTargetDirection(mHeadingSetpoint.get()));
+          Logger.recordOutput("DriveMaintainHeading/Mode", "Heading");
+          Logger.recordOutput(
+              "DriveMaintainHeading/HeadingSetpoint", mHeadingSetpoint.get().getDegrees());
+        }
+        break;
     }
   }
 

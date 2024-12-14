@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot.RobotState;
 import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
@@ -152,24 +153,14 @@ public class RobotContainer {
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
             () -> MathUtil.applyDeadband(-controller.getRightX(), 0.05)));
 
-    controller.circle().whileTrue(new ObjectDetection(drive, vision));
-    controller.triangle().whileTrue(new InstantCommand(() -> pivot.resetEncoder()));
-
     controller
-        .povUp()
+        .circle()
         .whileTrue(
-            new InstantCommand(
-                () -> {
-                  drive.setDriveState(DriveState.VISION_STATE);
-                }))
-        .onFalse(
-            new InstantCommand(
-                () -> {
-                  drive.setDriveState(DriveState.OPEN_LOOP);
-                }));
+            new ConditionalCommand(
+                new InstantCommand(), new ObjectDetection(drive, vision), feeder::getFrontSensor));
 
     controller
-        .R1()
+        .L1()
         .whileTrue(getBackIntakeGroupCommand())
         .onFalse(
             getIdleCommand()
@@ -179,8 +170,8 @@ public class RobotContainer {
                           drive.setDriveState(DriveState.OPEN_LOOP);
                         })));
     controller
-        .L1()
-        .whileTrue(getFrontIntakeGroupCommand().andThen(new SetPivotAngle(pivot, 15.0, true)))
+        .L2()
+        .whileTrue(getFrontIntakeGroupCommand().andThen(new SetPivotAngle(pivot, 25.0, true)))
         .onFalse(
             new InstantCommand(
                 () -> {
@@ -189,7 +180,7 @@ public class RobotContainer {
                 }));
 
     controller
-        .cross()
+        .R2()
         .onTrue(
             new ConditionalCommand(
                 new AmpStep2Command(feeder, shooter, drive, pivot).andThen(getIdleCommand()),
@@ -202,34 +193,35 @@ public class RobotContainer {
                 feeder::getButtonPress));
 
     controller
-        .R2()
+        .R1()
         .whileTrue(
-          new RepeatCommand(
-            new ConditionalCommand(
-                getSpeakerShot()
-                    .alongWith(
-                        new WaitCommand(0.3)
-                            .andThen(
-                                Commands.waitUntil(
-                                        () ->
-                                            Constants.kShootingParams.isShooterPivotAtSetpoint(
-                                                pivot.getShooterPivotAngle(),
-                                                pivot.getTargetAngle()))
-                                    .andThen(
-                                        new FeederOpenLoop(feeder, -3)
-                                            .withTimeout(0.05)
-                                            .andThen(
-                                                new FeedWhenReady(
-                                                    drive, shooter, feeder, pivot))))),
-                new InstantCommand(
-                () -> {
-                  if(drive.getDriveState() != DriveState.VISION_STATE){
-                    drive.setDriveState(DriveState.HEADING_LOCK);
-                    drive.setTargetHeading(
-                        180.0); // TODO: Set to proper angles for each alliance. 0deg, 180deg
-                  }
-                }),
-                () -> vision.getTargetInfo().targetValid)))
+            new RepeatCommand(
+                new ConditionalCommand(
+                    getSpeakerShot()
+                        .alongWith(
+                            new WaitCommand(0.3)
+                                .andThen(
+                                    Commands.waitUntil(
+                                            () ->
+                                                Constants.kShootingParams.isShooterPivotAtSetpoint(
+                                                    pivot.getShooterPivotAngle(),
+                                                    pivot.getTargetAngle()))
+                                        .andThen(
+                                            new FeederOpenLoop(feeder, -3)
+                                                .withTimeout(0.05)
+                                                .andThen(
+                                                    new FeedWhenReady(
+                                                        drive, shooter, feeder, pivot))))),
+                    new InstantCommand(
+                        () -> {
+                          if (drive.getDriveState() != DriveState.VISION_STATE) {
+                            drive.setDriveState(DriveState.HEADING_LOCK);
+                            drive.setTargetHeading(
+                                180.0); // TODO: Set to proper angles for each alliance. 0deg,
+                            // 180deg
+                          }
+                        }),
+                    () -> vision.getTargetInfo().targetValid)))
         .onFalse(
             getIdleCommand()
                 .alongWith(new InstantCommand(() -> drive.setDriveState(DriveState.OPEN_LOOP))));
@@ -243,6 +235,8 @@ public class RobotContainer {
                       drive.setDriveState(DriveState.OPEN_LOOP);
                     })
                 .alongWith(getIdleCommand()));
+
+    new Trigger(intake::getShouldBlink).onTrue(vision.blinkTagLimelight());
   }
 
   /**
@@ -285,7 +279,7 @@ public class RobotContainer {
 
   public Command getSpeakerShot() {
     return new SetPivotAngleDist(pivot, vision, true)
-        .alongWith(new SetShooterRPM(shooter, 3300, 3300))
+        .alongWith(new SetShooterRPM(shooter, 3700, 3700))
         .alongWith(
             new InstantCommand(
                 () -> {

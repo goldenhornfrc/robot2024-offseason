@@ -5,8 +5,8 @@
 package frc.robot.commands.CloseLoop.backIntake;
 
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.RobotContainer;
 import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
 import frc.robot.commands.OpenLoop.BackIntakeOpenLoop;
 import frc.robot.commands.OpenLoop.FeederOpenLoop;
@@ -30,10 +30,10 @@ public class BackIntakeCommandGroup extends SequentialCommandGroup {
     addCommands(
         new SetPivotAngle(mPivot, 30, true),
         Commands.race(
-            Commands.waitUntil(mFeeder::getFrontSensor)
-                .andThen(RobotContainer.vision.blinkTagLimelight()),
+            Commands.waitUntil(mFeeder::getFrontSensor),
             new BackIntakeOpenLoop(mBackIntake, 6.5),
-            new FeederOpenLoop(mFeeder, 3.5)));
+            new FeederOpenLoop(mFeeder, 3.5)),
+        new InstantCommand(() -> mBackIntake.setShouldBlink(true)));
 
     /*new WaitForFrontSensor(mFeeder)
             .raceWith(

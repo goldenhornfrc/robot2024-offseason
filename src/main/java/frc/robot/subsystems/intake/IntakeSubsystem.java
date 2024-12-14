@@ -4,11 +4,13 @@
 
 package frc.robot.subsystems.intake;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class IntakeSubsystem extends SubsystemBase {
   private final IntakeIO io;
   private final IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
+  private boolean shouldBlink = false;
   /** Creates a new IntakeSubsystem. */
   public enum IntakeState {
     IDLE,
@@ -32,8 +34,17 @@ public class IntakeSubsystem extends SubsystemBase {
     io.setFrontIntakeVoltage(frontVoltage);
   }
 
+  public void setShouldBlink(boolean value) {
+    shouldBlink = value;
+  }
+
+  public boolean getShouldBlink() {
+    return shouldBlink;
+  }
+
   @Override
   public void periodic() {
+    SmartDashboard.putBoolean("intakeblink", shouldBlink);
     // io.updateInputs(inputs);
     // Logger.processInputs("Intake", inputs);
     // This method will be called once per scheduler run

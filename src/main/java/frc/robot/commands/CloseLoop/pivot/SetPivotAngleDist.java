@@ -44,11 +44,12 @@ public class SetPivotAngleDist extends Command {
   public void execute() {
 
     double distance = vision.getDistanceToTarget();
+
     double targetAngle =
         Constants.kPivotMap.getInterpolated(new InterpolatingDouble(Double.valueOf(distance)))
             .value;
 
-    System.out.println(targetAngle);
+    // System.out.println(targetAngle);
 
     if (Math.abs(shooterPivot.getShooterPivotAngle() - targetAngle) <= 5) {
       shooterPivot.setPositionVoltageAngle(targetAngle);
