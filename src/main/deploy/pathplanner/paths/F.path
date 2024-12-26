@@ -1,0 +1,124 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 4.16,
+        "y": 5.96
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.85285555186495,
+        "y": 7.202868251890351
+      },
+      "isLocked": false,
+      "linkedName": "E"
+    },
+    {
+      "anchor": {
+        "x": 8.13,
+        "y": 5.2
+      },
+      "prevControl": {
+        "x": 8.566264824837344,
+        "y": 5.574822688106915
+      },
+      "nextControl": {
+        "x": 7.91949883307248,
+        "y": 5.01914514133283
+      },
+      "isLocked": false,
+      "linkedName": null
+    },
+    {
+      "anchor": {
+        "x": 4.16,
+        "y": 5.96
+      },
+      "prevControl": {
+        "x": 6.375803520837812,
+        "y": 7.1239327094038805
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.5,
+      "rotationDegrees": 141.5587926668014,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 0.7,
+      "rotationDegrees": 140.39991741446764,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 1.25,
+      "rotationDegrees": 147.62417446771428,
+      "rotateFast": false
+    },
+    {
+      "waypointRelativePos": 1.65,
+      "rotationDegrees": 179.1382956877859,
+      "rotateFast": false
+    }
+  ],
+  "constraintZones": [],
+  "eventMarkers": [
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 1.9,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "FeederInstant"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 1.65,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "Override True"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 4.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": -167.41338487488886,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "BLUE CENTER",
+  "previewStartingState": {
+    "rotation": -168.24574890811888,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

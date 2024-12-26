@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 8.625466481702196,
+        "y": 0.7498876536214618
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 9.58255993435064,
+        "y": 0.8978917957835928
+      },
+      "isLocked": false,
+      "linkedName": "Red Sıde A"
+    },
+    {
+      "anchor": {
+        "x": 13.105058517809343,
+        "y": 3.1475547566479753
+      },
+      "prevControl": {
+        "x": 12.670913034133763,
+        "y": 2.298997674918426
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": "RED SIDE B"
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 3.0,
+    "maxAcceleration": 3.0,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 33.388513576111436,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "RED SIDE",
+  "previewStartingState": {
+    "rotation": 0,
+    "velocity": 0
+  },
+  "useDefaultConstraints": true
+}

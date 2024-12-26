@@ -14,7 +14,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.controller.PIDController;
-import frc.robot.util.TalonFXUtil;
+import frc.lib.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class ShooterPivotIOFalcon implements ShooterPivotIO {

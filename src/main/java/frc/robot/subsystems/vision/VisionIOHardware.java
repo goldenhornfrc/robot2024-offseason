@@ -4,9 +4,9 @@
 
 package frc.robot.subsystems.vision;
 
-import com.team254.lib.pathplanner.LimelightHelpers;
+import frc.lib.InterpolatingDouble;
+import frc.lib.LimelightHelpers;
 import frc.robot.Constants;
-import frc.robot.lib.InterpolatingDouble;
 
 /** Add your docs here. */
 public class VisionIOHardware implements VisionIO {

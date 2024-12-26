@@ -1,24 +1,32 @@
 package frc.robot.subsystems.drive;
 
+import com.choreo.lib.Choreo;
+import com.choreo.lib.ChoreoTrajectory;
 import com.ctre.phoenix6.mechanisms.swerve.utility.PhoenixPIDController;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.PathPlannerLogging;
 import com.pathplanner.lib.util.ReplanningConfig;
-import com.team254.lib.pathplanner.AdvancedAutoBuilder;
-import com.team254.lib.pathplanner.AdvancedHolonomicPathFollowerConfig;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.wpilibj.RobotState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.util.swerve.*;
+import frc.lib.util.swerve.SwerveModule.DriveRequestType;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
-import frc.robot.util.swerve.*;
-import frc.robot.util.swerve.SwerveModule.DriveRequestType;
 import java.util.Optional;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -36,13 +44,19 @@ public class DriveSubsystem extends SubsystemBase {
   private final SwerveRequest.ApplyChassisSpeeds autoRequest =
       new SwerveRequest.ApplyChassisSpeeds().withDriveRequestType(DriveRequestType.Velocity);
 
+  StructPublisher<Pose2d> publisher =
+      NetworkTableInstance.getDefault().getStructTopic("MyRobotPose", Pose2d.struct).publish();
+
   private final PhoenixPIDController visionController = new PhoenixPIDController(7.0, 0, 0.007);
+
+  private boolean wantsOverride = false;
 
   public enum DriveState {
     OPEN_LOOP,
     HEADING_LOCK,
     INTAKE_STATE,
-    VISION_STATE
+    VISION_STATE,
+    AMP_STATE
   }
 
   private DriveState driveState = DriveState.OPEN_LOOP;
@@ -65,6 +79,35 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
     SmartDashboard.putNumber("Heading", targetHeading);
     SmartDashboard.putString("Pose", getPose().toString());
+
+    publisher.set(getPose());
+    var targets = io.getModuleTargets();
+    var states = io.getModuleStates();
+    SmartDashboard.putNumberArray(
+        "DesiredStates",
+        new double[] {
+          targets[0].angle.getDegrees(),
+          targets[0].speedMetersPerSecond,
+          targets[1].angle.getDegrees(),
+          targets[1].speedMetersPerSecond,
+          targets[2].angle.getDegrees(),
+          targets[2].speedMetersPerSecond,
+          targets[3].angle.getDegrees(),
+          targets[3].speedMetersPerSecond
+        });
+
+    SmartDashboard.putNumberArray(
+        "CurrentStates",
+        new double[] {
+          states[0].angle.getDegrees(),
+          states[0].speedMetersPerSecond,
+          states[1].angle.getDegrees(),
+          states[1].speedMetersPerSecond,
+          states[2].angle.getDegrees(),
+          states[2].speedMetersPerSecond,
+          states[3].angle.getDegrees(),
+          states[3].speedMetersPerSecond
+        });
   }
 
   public void resetOdometry(Pose2d pose) {
@@ -77,22 +120,18 @@ public class DriveSubsystem extends SubsystemBase {
       driveBaseRadius = Math.max(driveBaseRadius, moduleLocation.getNorm());
     }
 
-    AdvancedAutoBuilder.configureHolonomic(
-        null,
-        (pose) -> {}, // TODO FİXXXXXXXXXXXXxx
-        // this::seedFieldRelative,
-        null,
+    AutoBuilder.configureHolonomic(
+        this::getPose,
+        this::resetOdometry,
+        this::getChassisSpeeds,
         (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
-        new AdvancedHolonomicPathFollowerConfig(
-            new PIDConstants(0, 0, 0),
-            new PIDConstants(0, 0, 0),
-            0,
+        new HolonomicPathFollowerConfig(
+            new PIDConstants(5.0, 0, 0),
+            new PIDConstants(1.6, 0, 0),
             TunerConstants.kSpeedAt12VoltsMps,
             driveBaseRadius,
             new ReplanningConfig()),
-        () ->
-            DriverStation.getAlliance().isPresent()
-                && DriverStation.getAlliance().equals(Optional.of(Alliance.Red)),
+        () -> false, // Robot.getAlliance() == Alliance.Red,
         this);
 
     PathPlannerLogging.setLogTargetPoseCallback(
@@ -104,10 +143,50 @@ public class DriveSubsystem extends SubsystemBase {
         (pose) -> {
           Logger.recordOutput("PathPlanner/currentPose", pose);
         });
+
+    PPHolonomicDriveController.setRotationTargetOverride(this::getRotationTargetOverride);
+  }
+
+  public Optional<Rotation2d> getRotationTargetOverride() {
+    if (wantsOverride) {
+      var info = RobotContainer.vision.getTargetInfo();
+
+      if (info.targetValid) {
+        return Optional.of(getPose().getRotation().minus(Rotation2d.fromDegrees(info.targetTx)));
+      } else {
+        return Optional.empty();
+      }
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public Command getPathFollowCommand(ChoreoTrajectory trajectory, boolean resetPose) {
+    return Commands.sequence(
+        new InstantCommand(
+            () -> {
+              if (resetPose) {
+                this.seedFieldRelative(trajectory.getInitialPose());
+                ;
+              }
+            }),
+        Choreo.choreoSwerveCommand(
+            trajectory, //
+            this::getPose, //
+            new PIDController(1.0, 0.0, 0.0),
+            new PIDController(1.0, 0.0, 0.0),
+            new PIDController(1.0, 0.0, 0.0),
+            (speeds) -> this.setControl(autoRequest.withSpeeds(speeds)),
+            () -> false, //
+            this));
   }
 
   public Translation2d[] getModuleLocations() {
     return io.getModuleLocations();
+  }
+
+  public void setWantsOverride(boolean WantsOVERRIDE) {
+    wantsOverride = WantsOVERRIDE;
   }
 
   public void setControl(SwerveRequest request) {
@@ -159,7 +238,7 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public ChassisSpeeds getChassisSpeeds() {
-    return io.getKinematics().toChassisSpeeds(inputs.ModuleStates);
+    return io.getChassisSpeeds();
   }
 
   public Pose2d getPose() {

@@ -7,7 +7,7 @@ package frc.robot.subsystems.intake;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import frc.robot.util.SparkMaxUtil;
+import frc.lib.util.SparkMaxUtil;
 
 /** Add your docs here. */
 public class IntakeIOSpark implements IntakeIO {
