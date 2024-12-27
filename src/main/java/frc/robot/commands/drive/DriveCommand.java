@@ -12,6 +12,7 @@ import frc.lib.util.swerve.SwerveModule;
 import frc.lib.util.swerve.SwerveRequest;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem.DriveState;
 import frc.robot.subsystems.vision.VisionSubsystem;
@@ -97,11 +98,11 @@ public class DriveCommand extends Command {
         Logger.recordOutput("DriveCommand/Mode", "TargetHeading");
         Logger.recordOutput("DriveCommand/targetHeading", mHeadingSetpoint.get());
 
-        /*  if ((targetHeading == 0.0 || targetHeading == 180.0)
+        if ((targetHeading == 0.0 || targetHeading == 180.0)
             && RobotContainer.vision.getTargetInfo().targetValid) {
           mDrivetrain.setDriveState(DriveState.VISION_STATE);
           break;
-        }*/
+        }
 
         break;
 

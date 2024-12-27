@@ -4,7 +4,6 @@
 
 package frc.robot.commands.CommandGroups.Amp;
 
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Robot;
@@ -30,10 +29,7 @@ public class AmpStep1Command extends SequentialCommandGroup {
                 () -> {
                   Robot.setRobotState(RobotState.AMP);
                   mDrive.setDriveState(DriveState.HEADING_LOCK);
-                  mDrive.setTargetHeading(
-                      Robot.getAlliance() == Alliance.Red
-                          ? 270
-                          : 90); // TODO change this according to alliance
+                  mDrive.setTargetHeading(270); // TODO change this according to alliance
                 })
             .andThen(new SetPivotAngle(mPivot, 60, true, true))
             .andThen(

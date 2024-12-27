@@ -167,11 +167,12 @@ public class RobotContainer {
             }));
     NamedCommands.registerCommand("Pivot44.5", new SetPivotAngle(pivot, 44.5, true));
     NamedCommands.registerCommand("PivotAngle41", new SetPivotAngle(pivot, 41.0, true));
-    NamedCommands.registerCommand("PivotAngle42", new SetPivotAngle(pivot, 42.3, true));
+    NamedCommands.registerCommand("PivotAngle42", new SetPivotAngle(pivot, 42.8, true));
+    NamedCommands.registerCommand("PivotAngle0", new SetPivotAngle(pivot, 0, true));
     NamedCommands.registerCommand(
         "ShooterStop", new InstantCommand(() -> shooter.setVoltage(0, 0)));
     NamedCommands.registerCommand("PivotDistance", new SetPivotAngleDist(pivot, vision, true));
-    NamedCommands.registerCommand("PivotAngle38", new SetPivotAngle(pivot, 37.7, true));
+    NamedCommands.registerCommand("PivotAngle38", new SetPivotAngle(pivot, 38.5, true));
     NamedCommands.registerCommand("-Feeder", new FeederOpenLoop(feeder, -3));
     NamedCommands.registerCommand(
         "Pivot30", new InstantCommand(() -> pivot.setMotionMagicAngle(30.0)));
@@ -313,7 +314,9 @@ public class RobotContainer {
                           if (drive.getDriveState() != DriveState.VISION_STATE) {
                             drive.setDriveState(DriveState.HEADING_LOCK);
                             drive.setTargetHeading(
-                                0.0); // TODO: Set to proper angles for each alliance. 0deg,
+                                Robot.getAlliance() == Alliance.Red
+                                    ? 0
+                                    : 180); // TODO: Set to proper angles for each alliance. 0deg,
                             // 180deg
                           }
                         }),
@@ -434,7 +437,7 @@ public class RobotContainer {
                   drive.setTargetHeading(
                       Robot.getAlliance() == Alliance.Red
                           ? 30
-                          : 210); // TODO: Set to proper angles for each alliance. 30deg, 150deg
+                          : 150); // TODO: Set to proper angles for each alliance. 30deg, 150deg
                 }))
         .alongWith(new SetShooterRPM(shooter, 3000, 3000))
         .alongWith(

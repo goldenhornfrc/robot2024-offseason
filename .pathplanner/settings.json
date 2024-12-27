@@ -4,6 +4,7 @@
   "holonomicMode": true,
   "pathFolders": [
     "BLUE CENTER",
+    "BLUE SIDE",
     "RED CENTER",
     "RED SIDE"
   ],
