@@ -13,33 +13,40 @@
 
 package frc.robot;
 
-import com.choreo.lib.Choreo;
-import com.choreo.lib.ChoreoTrajectory;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandPS5Controller;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Robot.RobotState;
-import frc.robot.commands.CloseLoop.Amp.AmpStep1Command;
-import frc.robot.commands.CloseLoop.Amp.AmpStep2Command;
-import frc.robot.commands.CloseLoop.backIntake.BackIntakeCommandGroup;
-import frc.robot.commands.CloseLoop.drive.DriveCommand;
-import frc.robot.commands.CloseLoop.feeder.FeedWhenReady;
-import frc.robot.commands.CloseLoop.frontIntake.FrontIntakeCommandGroup;
-import frc.robot.commands.CloseLoop.pivot.SetPivotAngle;
-import frc.robot.commands.CloseLoop.sensors.WaitForBackSensor;
-import frc.robot.commands.CloseLoop.shooter.SetShooterRPM;
-import frc.robot.commands.OpenLoop.BothIntakeOpenLoop;
-import frc.robot.commands.OpenLoop.FeederOpenLoop;
-import frc.robot.commands.OpenLoop.FrontIntakeOpenLoop;
-import frc.robot.commands.OpenLoop.ShooterOpenLoop;
+import frc.robot.commands.CommandGroups.Amp.AmpStep1Command;
+import frc.robot.commands.CommandGroups.Amp.AmpStep2Command;
+import frc.robot.commands.CommandGroups.object.ObjectDetection;
+import frc.robot.commands.backIntake.BackIntakeAutoCommand;
+import frc.robot.commands.backIntake.BackIntakeCommandGroup;
+import frc.robot.commands.backIntake.BackIntakeOpenLoop;
+import frc.robot.commands.drive.DriveCommand;
+import frc.robot.commands.feeder.FeedWhenReady;
+import frc.robot.commands.feeder.FeederOpenLoop;
+import frc.robot.commands.frontIntake.FrontIntakeCommandGroup;
+import frc.robot.commands.frontIntake.FrontIntakeOpenLoop;
+import frc.robot.commands.pivot.SetPivotAngle;
+import frc.robot.commands.pivot.SetPivotAngleDist;
+import frc.robot.commands.pivot.ShooterPivotOpenLoop;
+import frc.robot.commands.shooter.SetShooterRPM;
+import frc.robot.commands.shooter.ShooterOpenLoop;
 import frc.robot.subsystems.drive.DriveIO;
 import frc.robot.subsystems.drive.DriveIOFalcon;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -58,15 +65,6 @@ import frc.robot.subsystems.shooterPivot.ShooterPivotIOFalcon;
 import frc.robot.subsystems.shooterPivot.ShooterPivotSubsystem;
 import frc.robot.subsystems.vision.VisionIOHardware;
 import frc.robot.subsystems.vision.VisionSubsystem;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -75,8 +73,11 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardNumber;
  * subsystems, commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+
+  private SendableChooser<Command> autoChoice = new SendableChooser<Command>();
   // Controller
   public static final CommandPS5Controller controller = new CommandPS5Controller(0);
+  public static final CommandPS5Controller operator = new CommandPS5Controller(1);
 
   // Subsystems
   // public static DriveSubsystem drive;
@@ -86,9 +87,6 @@ public class RobotContainer {
   public static FeederSubsystem feeder;
   public static DriveSubsystem drive;
   public static VisionSubsystem vision;
-  // Dashboard inputs
-  private final LoggedDashboardNumber flywheelSpeedInput =
-      new LoggedDashboardNumber("Flywheel Speed", 3000.0);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
@@ -109,10 +107,10 @@ public class RobotContainer {
         break;
 
       case SIM:
-        intake = new IntakeSubsystem(new IntakeIOSpark()); // TODO
-        shooter = new ShooterSubsystem(new ShooterIOKraken()); // TODO
-        pivot = new ShooterPivotSubsystem(new ShooterPivotIOFalcon()); // TODO
-        feeder = new FeederSubsystem(new FeederIOFalcon()); // TODO
+        intake = new IntakeSubsystem(new IntakeIOSpark()); 
+        shooter = new ShooterSubsystem(new ShooterIOKraken());
+        pivot = new ShooterPivotSubsystem(new ShooterPivotIOFalcon()); 
+        feeder = new FeederSubsystem(new FeederIOFalcon()); 
         drive =
             new DriveSubsystem(
                 new DriveIOFalcon(
@@ -133,6 +131,58 @@ public class RobotContainer {
         break;
     }
 
+    NamedCommands.registerCommand("BackIntake", new BackIntakeOpenLoop(intake, 8.0));
+    NamedCommands.registerCommand("Feeder 5Volts", new FeederOpenLoop(feeder, 7.0));
+    NamedCommands.registerCommand(
+        "FeederInstant",
+        new InstantCommand(
+            () -> {
+              feeder.setVoltage(7);
+            }));
+    NamedCommands.registerCommand(
+        "FeederStop",
+        new InstantCommand(
+            () -> {
+              feeder.setVoltage(0);
+            }));
+    NamedCommands.registerCommand(
+        "Shooter 3700RPM",
+        new InstantCommand(
+            () -> {
+              shooter.setTargetRPM(3700, 3700);
+            }));
+    NamedCommands.registerCommand("Pivot44", new SetPivotAngle(pivot, 43.9, true));
+    NamedCommands.registerCommand("Pivot43", new SetPivotAngle(pivot, 43.7, true));
+    NamedCommands.registerCommand("PivotAngle42", new SetPivotAngle(pivot, 42.8, true));
+    NamedCommands.registerCommand("PivotAngle0", new SetPivotAngle(pivot, 0, true));
+    NamedCommands.registerCommand("ShooterStop", new InstantCommand(() -> shooter.setVoltage(0, 0)));
+    NamedCommands.registerCommand("PivotDistance", new SetPivotAngleDist(pivot, vision, true));
+    NamedCommands.registerCommand("PivotAngle38", new SetPivotAngle(pivot, 39, true));
+    NamedCommands.registerCommand("pivot38", new SetPivotAngle(pivot, 38.0, true));
+    NamedCommands.registerCommand("-Feeder", new FeederOpenLoop(feeder, -3));
+    NamedCommands.registerCommand("Pivot30", new InstantCommand(() -> pivot.setMotionMagicAngle(30.0)));
+
+    NamedCommands.registerCommand(
+        "BackIntakeAuto", new BackIntakeAutoCommand(feeder, intake, shooter, pivot));
+    NamedCommands.registerCommand(
+        "IntakeCommandGroup", new BackIntakeCommandGroup(feeder, intake, shooter, pivot));
+
+    NamedCommands.registerCommand(
+        "Override True",
+        new InstantCommand(
+            () -> {
+              drive.setWantsOverride(true);
+            }));
+    NamedCommands.registerCommand(
+        "Override False",
+        new InstantCommand(
+            () -> {
+              drive.setWantsOverride(false);
+            }));
+    autoChoice = AutoBuilder.buildAutoChooser();
+
+    // 6791
+    SmartDashboard.putData("Auto Selector", autoChoice);
     configureButtonBindings();
   }
 
@@ -147,27 +197,16 @@ public class RobotContainer {
     drive.setDefaultCommand(
         new DriveCommand(
             drive,
+            vision,
             () -> MathUtil.applyDeadband(controller.getLeftY(), 0.05),
             () -> MathUtil.applyDeadband(controller.getLeftX(), 0.05),
             () -> MathUtil.applyDeadband(-controller.getRightX(), 0.05)));
 
-    controller.cross().onTrue(new SetPivotAngle(pivot, 60, true));
-    controller.triangle().onTrue(new SetPivotAngle(pivot, 0, false));
-    controller.circle().whileTrue(new FeederOpenLoop(feeder, 4));
-
     controller
-        .square()
-        .onTrue(
-            new InstantCommand(
-                () -> {
-                  drive.setTargetHeading(90);
-                  drive.setDriveState(DriveState.HEADING_LOCK);
-                }))
-        .onFalse(
-            new InstantCommand(
-                () -> {
-                  drive.setDriveState(DriveState.OPEN_LOOP);
-                }));
+        .circle()
+        .whileTrue(
+            new ConditionalCommand(
+                new InstantCommand(), new ObjectDetection(drive, vision), feeder::getFrontSensor));
 
     controller
         .R1()
@@ -181,32 +220,101 @@ public class RobotContainer {
                         })));
     controller
         .L1()
-        .whileTrue(getFrontIntakeGroupCommand())
+        .whileTrue(getFrontIntakeGroupCommand().andThen(new SetPivotAngle(pivot, 25.0, true)))
         .onFalse(
-            getIdleCommand()
-                .alongWith(
-                    new InstantCommand(
-                        () -> {
-                          drive.setDriveState(DriveState.OPEN_LOOP);
-                        })));
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.OPEN_LOOP);
+                  Robot.setRobotState(RobotState.IDLE);
+                }));
 
     controller
-        .povUp()
+        .cross()
         .onTrue(
             new ConditionalCommand(
-                new AmpStep2Command(feeder, shooter, drive, pivot).andThen(getIdleCommand()),
-                new AmpStep1Command(drive, pivot, feeder),
+                new AmpStep2Command(feeder, shooter, drive, pivot)
+                    .andThen(getIdleCommand())
+                    .andThen(
+                        new InstantCommand(
+                            () -> {
+                              drive.setDriveState(DriveState.OPEN_LOOP);
+                            })),
+                new AmpStep1Command(drive, pivot, feeder)
+                    .andThen(
+                        new InstantCommand(
+                            () -> {
+                              drive.setDriveState(DriveState.AMP_STATE);
+                            })),
                 feeder::getButtonPress));
 
-    controller.L2().whileTrue(new FeedWhenReady(drive, shooter, feeder, pivot));
+    controller
+        .R2()
+        .whileTrue(
+            new RepeatCommand(
+                new ConditionalCommand(
+                    getSpeakerShot()
+                        .alongWith(
+                            new WaitCommand(0.3)
+                                .andThen(
+                                    Commands.waitUntil(
+                                            () ->
+                                                Constants.kShootingParams.isShooterPivotAtSetpoint(
+                                                    pivot.getShooterPivotAngle(),
+                                                    pivot.getTargetAngle()))
+                                        .andThen(
+                                            new FeederOpenLoop(feeder, -3)
+                                                .withTimeout(0.05)
+                                                .andThen(
+                                                    new FeedWhenReady(
+                                                        drive, shooter, feeder, pivot))))),
+                    new InstantCommand(
+                        () -> {
+                          if (drive.getDriveState() != DriveState.VISION_STATE) {
+                            drive.setDriveState(DriveState.HEADING_LOCK);
+                            drive.setTargetHeading(
+                                Robot.getAlliance() == Alliance.Red
+                                    ? 0
+                                    : 180); 
+                          }
+                        }),
+                    () -> vision.getTargetInfo().targetValid)))
+        .onFalse(
+            getIdleCommand()
+                .alongWith(new InstantCommand(() -> drive.setDriveState(DriveState.OPEN_LOOP))));
 
-    controller.R2().whileTrue(getSpeakerShot()).onFalse(getIdleCommand());
+    controller
+        .L2()
+        .whileTrue(getFeedOverStageCommand())
+        .onFalse(
+            new InstantCommand(
+                    () -> {
+                      drive.setDriveState(DriveState.OPEN_LOOP);
+                    })
+                .alongWith(getIdleCommand()));
 
-    controller.povDown().whileTrue(getUnstuckNoteCommand());
 
-    controller.povLeft().whileTrue(getIntakesOuttake());
+    operator
+        .cross()
+        .whileTrue(
+            new SetPivotAngle(pivot, 45, true)
+                .andThen(
+                    new FeederOpenLoop(feeder, -6).alongWith(new BackIntakeOpenLoop(intake, -5))));
+    operator.L1().whileTrue(new FrontIntakeOpenLoop(intake, -4));
+    operator
+        .L2()
+        .whileTrue(
+            new ShooterOpenLoop(shooter, 5.5).alongWith(new FrontIntakeOpenLoop(intake, -5.5)));
+    operator.povDown().whileTrue(new ShooterPivotOpenLoop(pivot, -2));
+    operator.options().onTrue(new InstantCommand(() -> pivot.resetEncoder()));
+    operator
+        .R2()
+        .whileTrue(
+            new SetPivotAngle(pivot, 60, true)
+                .andThen(new FeederOpenLoop(feeder, -5).withTimeout(0.05))
+                .andThen(new WaitCommand(1.0).alongWith(new FeederOpenLoop(feeder, 6)))
+                .alongWith(new ShooterOpenLoop(shooter, 9)));
 
-    controller.povRight().whileTrue(new SetPivotAngle(pivot, 120, true));
+    new Trigger(intake::getShouldBlink).onTrue(vision.blinkTagLimelight());
   }
 
   /**
@@ -214,46 +322,14 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  public Command getAutonomousCommand() {
-    return null;
-  }
-
-  private Map<String, ChoreoTrajectory> loadTrajectories() {
-    Set<String> trajNames;
-    try {
-      if (Robot.isReal()) {
-        trajNames = listFilesUsingFilesList("/home/lvuser/deploy/choreo");
-      } else {
-        trajNames = listFilesUsingFilesList("src/main/deploy/choreo");
-      }
-    } catch (IOException e) {
-      DriverStation.reportError("Invalid Directory! Trajectories failed to load!", true);
-      return null;
-    }
-    return trajNames.stream()
-        .collect(
-            Collectors.toMap(
-                entry -> entry.replace(".traj", ""),
-                entry -> Choreo.getTrajectory(entry.replace(".traj", ""))));
-  }
-
-  private Set<String> listFilesUsingFilesList(String dir) throws IOException {
-    try (Stream<Path> stream = Files.list(Paths.get(dir))) {
-      return stream
-          .filter(file -> !Files.isDirectory(file))
-          .map(Path::getFileName)
-          .map(Path::toString)
-          .collect(Collectors.toSet());
-    }
-  }
-
   public Command getSpeakerShot() {
-    return new SetPivotAngle(pivot, 40, true)
-        .alongWith(new SetShooterRPM(shooter, 3500, 3500))
+    return new SetPivotAngleDist(pivot, vision, true)
+        .alongWith(new SetShooterRPM(shooter, 3700, 3700))
         .alongWith(
             new InstantCommand(
                 () -> {
                   Robot.setRobotState(RobotState.SPEAKER);
+                  drive.setDriveState(DriveState.VISION_STATE);
                 }));
   }
 
@@ -264,12 +340,6 @@ public class RobotContainer {
                 () -> {
                   Robot.setRobotState(RobotState.IDLE);
                 }));
-  }
-
-  public Command getIntakesOuttake() {
-    return new BothIntakeOpenLoop(intake, -4, -4)
-        .alongWith(new ShooterOpenLoop(shooter, 4))
-        .alongWith(new FeederOpenLoop(feeder, -3));
   }
 
   public Command getBackIntakeGroupCommand() {
@@ -290,21 +360,25 @@ public class RobotContainer {
                 }));
   }
 
-  public Command getUnstuckNoteCommand() {
-    return new SetPivotAngle(pivot, 30, true)
-        .andThen(
-            new WaitForBackSensor(feeder)
-                .raceWith(
-                    Commands.parallel(
-                        new ShooterOpenLoop(shooter, -8),
-                        new FrontIntakeOpenLoop(intake, 4),
-                        new FeederOpenLoop(feeder, -1.5)))
-                .andThen(
-                    new WaitUntilCommand(feeder::getFrontSensor)
-                        .raceWith(
-                            Commands.parallel(
-                                new FeederOpenLoop(feeder, -1.5),
-                                new ShooterOpenLoop(shooter, -3))))
-                .andThen(new FeederOpenLoop(feeder, -2).withTimeout(0.08)));
+  public Command getFeedOverStageCommand() {
+    return new SetPivotAngle(pivot, 50.0, true)
+        .alongWith(
+            new InstantCommand(
+                () -> {
+                  drive.setDriveState(DriveState.HEADING_LOCK);
+                  drive.setTargetHeading(
+                      Robot.getAlliance() == Alliance.Red
+                          ? 30
+                          : 150);
+                }))
+        .alongWith(new SetShooterRPM(shooter, 3000, 3000))
+        .alongWith(
+            new WaitCommand(0.85)
+                .andThen(new FeederOpenLoop(feeder, -3).withTimeout(0.05))
+                .andThen(new FeederOpenLoop(feeder, 7)));
+  }
+
+  public Command getAutonomousCommand() {
+    return autoChoice.getSelected();
   }
 }

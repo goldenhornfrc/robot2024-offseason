@@ -16,9 +16,9 @@ package frc.robot;
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
-import frc.robot.lib.InterpolatingDouble;
-import frc.robot.lib.InterpolatingTreeMap;
-import frc.robot.lib.ShootingParameters;
+import frc.lib.InterpolatingDouble;
+import frc.lib.InterpolatingTreeMap;
+import frc.lib.ShootingParameters;
 import frc.robot.subsystems.drive.CommandSwerveDrivetrain;
 import frc.robot.subsystems.drive.TunerConstants;
 
@@ -38,7 +38,7 @@ public final class Constants {
   }
 
   public static class ShooterPivotConstants {
-    public static final double kGearRatio = 1 / 144;
+    public static final double kGearRatio = 1.0 / 144.0;
     public static final double kS = 0.0;
     public static final double kA = 0.0;
     public static final double kV = 0.0;
@@ -67,8 +67,6 @@ public final class Constants {
     public static final double kMaxAngularVel = Units.degreesToRadians(360 * 1.15);
     public static final double kSteerJoystickDeadband = 0.05;
     public static final double kHeadingControllerP = 3.5;
-    public static final double kHeadingControllerI = 0.0;
-    public static final double kHeadingControllerD = 0.0;
 
     public static final CommandSwerveDrivetrain kDriveTrain = TunerConstants.DriveTrain;
   }
@@ -87,85 +85,91 @@ public final class Constants {
     REPLAY
   }
 
-  public static double[][] kRPMValues = {
-    {7.41, 6500.0},
-    {5.31, 4000.0},
-    {4.81, 4000.0},
-    {4.31, 4000.0},
-    {3.81, 4000.0},
-    {3.31, 4000.0},
-    {2.81, 4000.0},
-    {2.31, 4000.0},
-    {1.81, 4000.0},
-    {1.31, 4000.0},
-    {0.0, 0.0}
-  };
-
   public static double[][] kPivotValues = {
-    {1.31, 60.0},
-    {0.0, 60.0}
+    {109.0, 60.3},
+    {135.0, 58.3},
+    {166.0, 52.3},
+    {178.0, 49.8},
+    {193.0, 48.8},
+    {214.0, 46.75},
+    {229.5, 44.75},
+    {246.5, 43.75},
+    {272.0, 42.3},
+    {287.0, 41.8},
+    {300, 41.3},
+    {315.5, 39.8},
+    {338.0, 39.65},
+    {362.0, 39.3},
+    {365.0, 38.8},
+    {378.0, 38.3},
+    {384.0, 38.0},
+    {400.0, 37.3},
+    {430.0, 36.3},
+    {450.0, 36.1}
   };
 
   public static double[][] kTYDistValuesRed = {
-    {19.27, 109.0},
-    {17.4, 116.0},
-    {15.58, 123.8},
-    {13.55, 131.7},
-    {11.48, 141.3},
-    {9.72, 149.3},
-    {8.45, 157.3},
-    {7.23, 164.3},
-    {6.24, 169.3},
-    {5.1, 177.3},
-    {3.84, 184.3},
-    {2.65, 194.3},
-    {1.8, 201.3},
-    {0.82, 209.3},
-    {-0.25, 217.3},
-    {-0.78, 224.3},
-    {-1.65, 231.3},
-    {-2.53, 239.3},
-    {-3.24, 246.3},
-    {-3.6, 251.3},
-    {-4.63, 266.3},
-    {-5.39, 271.3},
-    {-6.16, 283.3},
-    {-6.83, 293.3},
-    {-7.4, 301.3},
-    {-7.98, 309.3},
-    {-8.6, 319.3},
-    {-9.05, 329.3},
-    {-9.6, 339.3},
-    {-10.14, 349.3},
-    {-10.52, 359.3},
-    {-11.1, 369.3},
-    {-11.62, 379.3},
-    {-11.9, 389.3},
-    {-12.29, 399.3},
-    {-12.77, 409.3},
-    {-13.11, 419.3},
-    {-13.58, 429.3},
-    {-14.04, 439.3},
-    {-14.39, 449.3},
-    {-14.57, 459.3},
-    {-14.89, 469.3},
-    {-15.16, 479.3},
-    {-15.34, 489.3}
+    {18.74, 106.0},
+    {17.02, 113.5},
+    {15.90, 118.0},
+    {15.18, 122.0},
+    {14.52, 126.0},
+    {13.58, 131.0},
+    {12.73, 135.0},
+    {11.33, 141.0},
+    {10.12, 148.5},
+    {9.64, 151.6},
+    {8.98, 154.6},
+    {7.53, 164.7},
+    {6.74, 169.7},
+    {5.66, 177.0},
+    {3.94, 190.3},
+    {2.97, 199.3},
+    {2.25, 204.3},
+    {1.52, 211.0},
+    {0.50, 219.3},
+    {0.0, 223.0},
+    {-0.78, 230.0},
+    {-1.50, 237.0},
+    {-2.30, 245.0},
+    {-2.95, 252.0},
+    {-3.88, 262.7},
+    {-4.90, 276.0},
+    {-6.40, 295.0},
+    {-7.05, 306.0},
+    {-7.38, 312.0},
+    {-7.74, 318.0},
+    {-8.26, 327.5},
+    {-8.74, 336.0},
+    {-9.15, 346.0},
+    {-9.50, 352.5},
+    {-10.0, 364.0},
+    {-10.48, 373.3},
+    {-10.89, 383.0},
+    {-11.18, 388.0},
+    {-11.39, 393.0},
+    {-11.76, 400.0},
+    {-11.96, 405.3},
+    {-12.4, 417.0},
+    {-12.92, 428.5},
+    {-13.20, 436.0},
+    {-13.66, 448.3},
+    {-13.78, 454.0},
+    {-13.95, 462.0},
+    {-14.3, 473.5},
+    {-14.45, 482.5},
+    {-14.64, 492.0},
+    {-14.83, 502.944},
+    {-18.55, 593.379}
   };
 
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kPivotMap =
-      new InterpolatingTreeMap<>();
-  public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kRPMMap =
       new InterpolatingTreeMap<>();
 
   public static InterpolatingTreeMap<InterpolatingDouble, InterpolatingDouble> kDistanceMap =
       new InterpolatingTreeMap<>();
 
   static {
-    for (double[] pair : kRPMValues) {
-      kRPMMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
-    }
-
     for (double[] pair : kPivotValues) {
       kPivotMap.put(new InterpolatingDouble(pair[0]), new InterpolatingDouble(pair[1]));
     }
@@ -178,8 +182,7 @@ public final class Constants {
   public static final ShootingParameters kShootingParams =
       new ShootingParameters(
           kPivotMap,
-          kRPMMap, // rpm map
-          60.0, // shooter allowable error (rpm)
-          1.0 // pivot allowable error (°)
+          80.0, // shooter allowable error (rpm)
+          0.35 // pivot allowable error (°)
           );
 }

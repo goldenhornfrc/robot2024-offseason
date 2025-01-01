@@ -45,6 +45,7 @@ public class ShooterSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
     SmartDashboard.putNumber("LeftRPM", getLeftMotorRPM());
+    SmartDashboard.putNumber("RightRPM", getRightMotorRPM());
     io.updateInputs(inputs);
     Logger.processInputs("Shooter", (LoggableInputs) inputs);
     // This method will be called once per scheduler run

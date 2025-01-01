@@ -11,8 +11,8 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import frc.lib.util.TalonFXUtil;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class ShooterIOKraken implements ShooterIO {
@@ -51,12 +51,12 @@ public class ShooterIOKraken implements ShooterIO {
     config.Audio.BeepOnBoot = true;
     config.Audio.BeepOnConfig = true;
 
-    config.Slot0.kP = 0.135;
+    config.Slot0.kP = 0.18;
     config.Slot0.kI = 0;
     config.Slot0.kD = 0;
 
     config.Slot0.kS = 0;
-    config.Slot0.kV = 0.103;
+    config.Slot0.kV = 0.17;
     config.Slot0.kA = 0;
 
     config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.0;
@@ -67,7 +67,7 @@ public class ShooterIOKraken implements ShooterIO {
     config.CurrentLimits.SupplyCurrentLimit = 55.0;
     config.CurrentLimits.SupplyCurrentLimitEnable = true;
 
-    config.CurrentLimits.StatorCurrentLimit = 55.0;
+    config.CurrentLimits.StatorCurrentLimit = 80.0;
     config.CurrentLimits.StatorCurrentLimitEnable = true;
 
     TalonFXUtil.applyAndCheckConfiguration(talon, config);
@@ -92,8 +92,8 @@ public class ShooterIOKraken implements ShooterIO {
     leftTargetRPM = leftRPM;
     rightTargetRPM = rightRPM;
 
-    leftMotor.setControl(new VelocityVoltage(leftRPM / 60).withSlot(0));
-    rightMotor.setControl(new VelocityVoltage(leftRPM / 60).withSlot(0));
+    leftMotor.setControl(new VelocityVoltage(leftRPM / 60.0).withSlot(0));
+    rightMotor.setControl(new VelocityVoltage(rightRPM / 60.0).withSlot(0));
   }
 
   @Override

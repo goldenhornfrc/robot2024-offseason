@@ -6,13 +6,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.lib.util.RobotTime;
+import frc.lib.util.swerve.*;
 import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
-import frc.robot.util.RobotTime;
-import frc.robot.util.swerve.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -79,6 +80,10 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
     return m_kinematics;
   }
 
+  public ChassisSpeeds getChassisSpeeds() {
+    return super.getState().speeds;
+  }
+
   public void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {
     if (visionFieldPoseEstimate.getVisionMeasurementStdDevs() == null) {
       this.addVisionMeasurement(
@@ -93,7 +98,16 @@ public class DriveIOFalcon extends SwerveDrivetrain implements DriveIO {
   }
 
   public Pose2d getPose() {
-    return this.getState().Pose;
+
+    return super.getState().Pose;
+  }
+
+  public SwerveModuleState[] getModuleTargets() {
+    return super.getState().ModuleTargets;
+  }
+
+  public SwerveModuleState[] getModuleStates() {
+    return super.getState().ModuleStates;
   }
 
   Consumer<SwerveDriveState> telemetryConsumer_ =

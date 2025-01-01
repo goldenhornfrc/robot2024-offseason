@@ -11,15 +11,14 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.PIDController;
-import frc.robot.util.TalonFXUtil;
+import frc.lib.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class ShooterPivotIOFalcon implements ShooterPivotIO {
   private final TalonFX shooterPivotMotor = new TalonFX(21, "Canivore");
 
-  private final PIDController pid = new PIDController(0.1, 0, 0);
   // Status signals
   private final StatusSignal<Double> shooterPosition = shooterPivotMotor.getPosition();
   private final StatusSignal<Double> pivotVolts = shooterPivotMotor.getMotorVoltage();
@@ -60,20 +59,30 @@ public class ShooterPivotIOFalcon implements ShooterPivotIO {
     config.Slot0.kV = 0;
     config.Slot0.kA = 0;
 
-    config.Slot0.kP = 190 * 4;
+    config.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+    config.Slot0.kG = 1.25;
+
+    config.Slot0.kP = 144.0 * 3.0;
     config.Slot0.kI = 0;
-    config.Slot0.kD = 0.2;
+    config.Slot0.kD = 0.1;
+
+    config.Slot1.GravityType = GravityTypeValue.Arm_Cosine;
+    config.Slot1.kG = 0.0;
+
+    config.Slot1.kP = 144.0 * 3.0;
+    config.Slot1.kI = 0;
+    config.Slot1.kD = 0.1;
 
     config.OpenLoopRamps.DutyCycleOpenLoopRampPeriod = 0.05;
     config.OpenLoopRamps.VoltageOpenLoopRampPeriod = 0.05;
 
     config.MotionMagic.MotionMagicCruiseVelocity = 1.6;
-    config.MotionMagic.MotionMagicAcceleration = 1.6;
+    config.MotionMagic.MotionMagicAcceleration = 1.2;
 
     config.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     config.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 121.0 / 360.0;
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = 122.0 / 360.0;
     config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = 0.2 / 360.0;
 
     config.CurrentLimits.SupplyCurrentLimit = 40.0;
@@ -104,14 +113,31 @@ public class ShooterPivotIOFalcon implements ShooterPivotIO {
   }
 
   @Override
+  public void setMotionMagicAngleSlot1(double angle) {
+    targetAngle = angle;
+    shooterPivotMotor.setControl(new MotionMagicVoltage(angle / 360.0).withSlot(1));
+  }
+
+  @Override
   public void setPositionVoltageAngle(double angle) {
     targetAngle = angle;
-    shooterPivotMotor.setControl(new PositionVoltage(angle / 360).withSlot(0));
+    shooterPivotMotor.setControl(new PositionVoltage(angle / 360.0).withSlot(0));
+  }
+
+  @Override
+  public void setPositionVoltageAngleSlot1(double angle) {
+    targetAngle = angle;
+    shooterPivotMotor.setControl(new PositionVoltage(angle / 360.0).withSlot(1));
   }
 
   @Override
   public double getShooterPivotAngle() {
     return shooterPivotMotor.getPosition().getValueAsDouble() * 360;
+  }
+
+  @Override
+  public void resetEncoder() {
+    shooterPivotMotor.setPosition(0);
   }
 
   @Override

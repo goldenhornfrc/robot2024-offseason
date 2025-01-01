@@ -4,8 +4,9 @@
 
 package frc.robot.subsystems.vision;
 
-import com.team254.lib.pathplanner.LimelightHelpers;
-import frc.robot.subsystems.vision.VisionSubsystem.VisionResult;
+import frc.lib.InterpolatingDouble;
+import frc.lib.LimelightHelpers;
+import frc.robot.Constants;
 
 /** Add your docs here. */
 public class VisionIOHardware implements VisionIO {
@@ -14,7 +15,7 @@ public class VisionIOHardware implements VisionIO {
   private final String tagLLName = "limelight";
 
   @Override
-  public VisionIOInputs updateInputs(VisionIOInputs inputs) {
+  public void updateInputs(VisionIOInputs inputs) {
     double objectTx = LimelightHelpers.getTX(objectLLName);
     double objectTy = LimelightHelpers.getTY(objectLLName);
     boolean objectValid = LimelightHelpers.getTV(objectLLName);
@@ -24,7 +25,22 @@ public class VisionIOHardware implements VisionIO {
     double targetTy = LimelightHelpers.getTY(tagLLName);
     boolean targetValid = LimelightHelpers.getTV(tagLLName);
     inputs.targetResult = new VisionResult(targetTx, targetTy, targetValid);
+    inputs.targetDistance =
+        Constants.kDistanceMap.getInterpolated(new InterpolatingDouble(Double.valueOf(targetTy)))
+            .value;
+  }
 
-    return inputs;
+  @Override
+  public void blinkTagLimelight() {
+    LimelightHelpers.setLEDMode_ForceBlink(tagLLName);
+  }
+
+  @Override
+  public void setTagLimelightLED(boolean state) {
+    if (state) {
+      LimelightHelpers.setLEDMode_ForceOn(tagLLName);
+    } else {
+      LimelightHelpers.setLEDMode_ForceOff(tagLLName);
+    }
   }
 }

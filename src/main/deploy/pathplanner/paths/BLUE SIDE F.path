@@ -1,0 +1,52 @@
+{
+  "version": 1.0,
+  "waypoints": [
+    {
+      "anchor": {
+        "x": 7.949999999999999,
+        "y": 4.08
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 5.86272249467576,
+        "y": 3.9270432387018626
+      },
+      "isLocked": false,
+      "linkedName": "BLUE SIDE E"
+    },
+    {
+      "anchor": {
+        "x": 4.149999999999999,
+        "y": 4.89
+      },
+      "prevControl": {
+        "x": 5.418710068189369,
+        "y": 4.331587893945019
+      },
+      "nextControl": null,
+      "isLocked": false,
+      "linkedName": null
+    }
+  ],
+  "rotationTargets": [],
+  "constraintZones": [],
+  "eventMarkers": [],
+  "globalConstraints": {
+    "maxVelocity": 4.0,
+    "maxAcceleration": 3.7,
+    "maxAngularVelocity": 540.0,
+    "maxAngularAcceleration": 720.0
+  },
+  "goalEndState": {
+    "velocity": 0,
+    "rotation": 174.40740876083342,
+    "rotateFast": false
+  },
+  "reversed": false,
+  "folder": "BLUE SIDE",
+  "previewStartingState": {
+    "rotation": -179.354372198556,
+    "velocity": 0
+  },
+  "useDefaultConstraints": false
+}

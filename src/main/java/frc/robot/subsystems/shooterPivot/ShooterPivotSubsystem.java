@@ -19,6 +19,8 @@ public class ShooterPivotSubsystem extends SubsystemBase {
 
   private final Translation3d pivotPosition = new Translation3d(0, 0.05, 0.63);
 
+  private double testAngle = 55.0;
+
   StructPublisher<Pose3d> publisher =
       NetworkTableInstance.getDefault().getStructTopic("MyPose", Pose3d.struct).publish();
 
@@ -44,6 +46,14 @@ public class ShooterPivotSubsystem extends SubsystemBase {
     io.setPositionVoltageAngle(angle);
   }
 
+  public void setMotionMagicAngleSlot1(double targetAngle) {
+    io.setMotionMagicAngleSlot1(targetAngle);
+  }
+
+  public void setPositionVoltageAngleSlot1(double angle) {
+    io.setPositionVoltageAngleSlot1(angle);
+  }
+
   public double getShooterPivotAngle() {
     return io.getShooterPivotAngle();
   }
@@ -56,6 +66,20 @@ public class ShooterPivotSubsystem extends SubsystemBase {
     return inputs.shooterPosition;
   }
 
+  /* These are for Mapping angles
+  
+  public void testSum(double x) {
+    testAngle += x;
+  }
+
+  public double getTest() {
+    return testAngle;
+  } */ 
+
+  public void resetEncoder() {
+    io.resetEncoder();
+  }
+
   @Override
   public void periodic() {
     io.updateInputs(inputs);
@@ -63,6 +87,7 @@ public class ShooterPivotSubsystem extends SubsystemBase {
     Logger.processInputs("Pivot", inputs);
     SmartDashboard.putNumber("Pivot Angle", io.getShooterPivotAngle());
     publisher.set(new Pose3d(pivotPosition, new Rotation3d(io.getShooterPivotAngle(), 0, 0)));
+    SmartDashboard.putNumber("Test target angle", testAngle);
     // This method will be called once per scheduler run
   }
 }

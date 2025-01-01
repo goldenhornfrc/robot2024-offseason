@@ -11,7 +11,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import frc.robot.util.TalonFXUtil;
+import frc.lib.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class FeederIOFalcon implements FeederIO {

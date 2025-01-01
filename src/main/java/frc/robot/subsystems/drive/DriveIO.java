@@ -2,13 +2,15 @@ package frc.robot.subsystems.drive;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
+import frc.lib.util.MathHelpers;
+import frc.lib.util.swerve.SwerveDrivetrain;
+import frc.lib.util.swerve.SwerveRequest;
 import frc.robot.subsystems.vision.VisionFieldPoseEstimate;
-import frc.robot.util.MathHelpers;
-import frc.robot.util.swerve.SwerveDrivetrain;
-import frc.robot.util.swerve.SwerveRequest;
 import java.util.function.Supplier;
 import org.littletonrobotics.junction.AutoLog;
 
@@ -55,11 +57,23 @@ public interface DriveIO {
     return new Pose2d();
   }
 
-  public default void setControl(frc.robot.util.swerve.SwerveRequest request) {}
+  public default SwerveModuleState[] getModuleStates() {
+    return new SwerveModuleState[] {};
+  }
+
+  public default SwerveModuleState[] getModuleTargets() {
+    return new SwerveModuleState[] {};
+  }
+
+  public default void setControl(frc.lib.util.swerve.SwerveRequest request) {}
 
   public default Command applyRequest(
       Supplier<SwerveRequest> requestSupplier, Subsystem subsystemRequired) {
     return new Command() {};
+  }
+
+  public default ChassisSpeeds getChassisSpeeds() {
+    return new ChassisSpeeds();
   }
 
   public default void addVisionMeasurement(VisionFieldPoseEstimate visionFieldPoseEstimate) {}
