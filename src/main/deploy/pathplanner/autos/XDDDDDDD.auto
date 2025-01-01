@@ -100,7 +100,7 @@
               {
                 "type": "named",
                 "data": {
-                  "name": "Pivot44"
+                  "name": "PivotAngle43.5"
                 }
               },
               {
@@ -329,13 +329,7 @@
               {
                 "type": "path",
                 "data": {
-                  "pathName": "F"
-                }
-              },
-              {
-                "type": "named",
-                "data": {
-                  "name": "Override False"
+                  "pathName": "Copy of F"
                 }
               },
               {
@@ -345,61 +339,9 @@
                 }
               },
               {
-                "type": "sequential",
+                "type": "named",
                 "data": {
-                  "commands": [
-                    {
-                      "type": "deadline",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 3.5
-                            }
-                          },
-                          {
-                            "type": "sequential",
-                            "data": {
-                              "commands": [
-                                {
-                                  "type": "wait",
-                                  "data": {
-                                    "waitTime": 1.0
-                                  }
-                                },
-                                {
-                                  "type": "named",
-                                  "data": {
-                                    "name": "BackIntakeAuto"
-                                  }
-                                }
-                              ]
-                            }
-                          }
-                        ]
-                      }
-                    },
-                    {
-                      "type": "deadline",
-                      "data": {
-                        "commands": [
-                          {
-                            "type": "wait",
-                            "data": {
-                              "waitTime": 0.02
-                            }
-                          },
-                          {
-                            "type": "named",
-                            "data": {
-                              "name": "-Feeder"
-                            }
-                          }
-                        ]
-                      }
-                    }
-                  ]
+                  "name": "Override False"
                 }
               }
             ]

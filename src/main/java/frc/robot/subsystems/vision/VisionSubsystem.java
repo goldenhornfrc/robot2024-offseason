@@ -26,7 +26,7 @@ public class VisionSubsystem extends SubsystemBase {
 
   public VisionSubsystem(VisionIO io) {
     this.io = io;
-    io.setTagLimelightLED(true);
+    io.setTagLimelightLED(false);
   }
 
   @Override
@@ -72,7 +72,7 @@ public class VisionSubsystem extends SubsystemBase {
                 .andThen(
                     new InstantCommand(
                         () -> {
-                          io.setTagLimelightLED(true);
+                          io.setTagLimelightLED(false);
                           RobotContainer.intake.setShouldBlink(false);
                         })));
   }
