@@ -20,6 +20,7 @@ public class ShooterPivotSubsystem extends SubsystemBase {
   private final Translation3d pivotPosition = new Translation3d(0, 0.05, 0.63);
 
   private double testAngle = 55.0;
+
   StructPublisher<Pose3d> publisher =
       NetworkTableInstance.getDefault().getStructTopic("MyPose", Pose3d.struct).publish();
 
@@ -65,13 +66,15 @@ public class ShooterPivotSubsystem extends SubsystemBase {
     return inputs.shooterPosition;
   }
 
+  /* These are for Mapping angles
+  
   public void testSum(double x) {
     testAngle += x;
   }
 
   public double getTest() {
     return testAngle;
-  }
+  } */ 
 
   public void resetEncoder() {
     io.resetEncoder();

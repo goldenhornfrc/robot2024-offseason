@@ -13,14 +13,12 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.controller.PIDController;
 import frc.lib.util.TalonFXUtil;
 
 /** Add your docs here. */
 public class ShooterPivotIOFalcon implements ShooterPivotIO {
   private final TalonFX shooterPivotMotor = new TalonFX(21, "Canivore");
 
-  private final PIDController pid = new PIDController(0.1, 0, 0);
   // Status signals
   private final StatusSignal<Double> shooterPosition = shooterPivotMotor.getPosition();
   private final StatusSignal<Double> pivotVolts = shooterPivotMotor.getMotorVoltage();
