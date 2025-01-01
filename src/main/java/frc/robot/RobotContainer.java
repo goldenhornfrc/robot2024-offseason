@@ -165,14 +165,18 @@ public class RobotContainer {
             () -> {
               shooter.setTargetRPM(3700, 3700);
             }));
-    NamedCommands.registerCommand("Pivot44.5", new SetPivotAngle(pivot, 44.5, true));
-    NamedCommands.registerCommand("PivotAngle41", new SetPivotAngle(pivot, 41.0, true));
+    NamedCommands.registerCommand("Pivot43.5", new SetPivotAngle(pivot, 43.5, true));
+    NamedCommands.registerCommand("Pivot44", new SetPivotAngle(pivot, 44.5, true));
+    NamedCommands.registerCommand("Pivot43", new SetPivotAngle(pivot, 43.2, true));
+    NamedCommands.registerCommand("PivotAngle42.3", new SetPivotAngle(pivot, 42.3, true));
     NamedCommands.registerCommand("PivotAngle42", new SetPivotAngle(pivot, 42.8, true));
     NamedCommands.registerCommand("PivotAngle0", new SetPivotAngle(pivot, 0, true));
     NamedCommands.registerCommand(
         "ShooterStop", new InstantCommand(() -> shooter.setVoltage(0, 0)));
     NamedCommands.registerCommand("PivotDistance", new SetPivotAngleDist(pivot, vision, true));
-    NamedCommands.registerCommand("PivotAngle38", new SetPivotAngle(pivot, 38.5, true));
+    NamedCommands.registerCommand("PivotAngle38", new SetPivotAngle(pivot, 39, true));
+    NamedCommands.registerCommand("pivot38", new SetPivotAngle(pivot, 38.0, true));
+    NamedCommands.registerCommand("pivot38.5", new SetPivotAngle(pivot, 38.6, true));
     NamedCommands.registerCommand("-Feeder", new FeederOpenLoop(feeder, -3));
     NamedCommands.registerCommand(
         "Pivot30", new InstantCommand(() -> pivot.setMotionMagicAngle(30.0)));
@@ -354,9 +358,9 @@ public class RobotContainer {
         .R2()
         .whileTrue(
             new SetPivotAngle(pivot, 60, true)
-                .andThen(new FeederOpenLoop(feeder, -3).withTimeout(0.05))
+                .andThen(new FeederOpenLoop(feeder, -5).withTimeout(0.05))
                 .andThen(new WaitCommand(1.0).alongWith(new FeederOpenLoop(feeder, 6)))
-                .alongWith(new ShooterOpenLoop(shooter, 7)));
+                .alongWith(new ShooterOpenLoop(shooter, 9)));
 
     new Trigger(intake::getShouldBlink).onTrue(vision.blinkTagLimelight());
   }
